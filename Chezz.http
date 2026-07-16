@@ -1,0 +1,6 @@
+@Chezz_HostAddress = http://localhost:5281
+
+GET {{Chezz_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
