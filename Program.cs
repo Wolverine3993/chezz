@@ -22,7 +22,8 @@ namespace Chezz
 
 			builder.Services.AddDbContext<ChezzDbContext>(options => options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-			builder.Services.AddIdentity<ChezzUser, ChezzRole>()
+			builder.Services.AddIdentityApiEndpoints<ChezzUser>()
+				.AddRoles<ChezzRole>()
 				.AddEntityFrameworkStores<ChezzDbContext>()
 				.AddDefaultTokenProviders();
 
@@ -53,6 +54,9 @@ namespace Chezz
 
 
 			app.MapControllers();
+
+			app.MapGroup("/api/identity")
+				.MapIdentityApi<ChezzUser>();
 
 			app.Run();
 		}
