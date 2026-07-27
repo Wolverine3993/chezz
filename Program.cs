@@ -1,7 +1,6 @@
 
 using Chezz.Database;
 using Chezz.Database.Models;
-using Chezz.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.UI.Services;
