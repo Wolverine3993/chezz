@@ -1,4 +1,9 @@
 
+using Chezz.Database;
+using Chezz.Database.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+
 namespace Chezz
 {
 	public class Program
@@ -14,6 +19,13 @@ namespace Chezz
 				// Serve every controller under a global "/api" prefix.
 				options.Conventions.Add(new Chezz.Conventions.RoutePrefixConvention("api"));
 			});
+
+			builder.Services.AddDbContext<ChezzDbContext>(options => options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+			builder.Services.AddIdentity<ChezzUser, ChezzRole>()
+				.AddEntityFrameworkStores<ChezzDbContext>()
+				.AddDefaultTokenProviders();
+
 			// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 			builder.Services.AddEndpointsApiExplorer();
 			builder.Services.AddSwaggerGen();
@@ -23,12 +35,20 @@ namespace Chezz
 			// Configure the HTTP request pipeline.
 			if (app.Environment.IsDevelopment())
 			{
+				// Apply any pending EF Core migrations automatically in development.
+				using (var scope = app.Services.CreateScope())
+				{
+					var db = scope.ServiceProvider.GetRequiredService<ChezzDbContext>();
+					db.Database.Migrate();
+				}
+
 				app.UseSwagger();
 				app.UseSwaggerUI();
 			}
 
 			app.UseHttpsRedirection();
 
+			app.UseAuthentication();
 			app.UseAuthorization();
 
 
