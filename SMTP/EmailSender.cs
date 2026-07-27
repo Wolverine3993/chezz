@@ -5,9 +5,8 @@ using Google.Apis.Auth.OAuth2.Flows;
 using MailKit.Net.Smtp;
 using MimeKit;
 using MailKit.Security;
-using Chezz.SMTP;
 
-namespace Chezz.Services
+namespace Chezz.SMTP
 {
     public class EmailSender(ILogger<EmailSender> _logger, SmtpConfiguration _configuration) : IEmailSender
     {
@@ -35,11 +34,13 @@ namespace Chezz.Services
                 if (await credential.RefreshTokenAsync(CancellationToken.None))
                 {
                     _credentials = credential.Token;
-                    _logger.LogInformation("SMTP client authentication success");
+                    _logger.LogInformation("SMTP client token refreshed");
                     return;
                 }
-                _logger.LogError("SMTP client authentication failure");
+                _logger.LogError("SMTP client token failure");
             }
+
+            _logger.LogInformation("SMTP client token not stale, continuing...");
         }
         public async Task SendEmailAsync(string email, string subject, string htmlMessage)
         {
@@ -64,6 +65,8 @@ namespace Chezz.Services
                 await client.ConnectAsync("smtp.gmail.com", 465, true);
 
                 await client.AuthenticateAsync(new SaslMechanismOAuth2(_configuration.ClientAddress, _credentials.AccessToken));
+                _logger.LogInformation("SMTP client authenticated successfully");
+
                 await client.SendAsync(mimeEmail);
                 _logger.LogInformation("Successfully sent an email to {0}", email);
 
