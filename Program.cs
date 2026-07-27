@@ -1,8 +1,11 @@
 
 using Chezz.Database;
 using Chezz.Database.Models;
+using Chezz.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.UI.Services;
+using Chezz.SMTP;
 
 namespace Chezz
 {
@@ -11,16 +14,19 @@ namespace Chezz
 		public static void Main(string[] args)
 		{
 			var builder = WebApplication.CreateBuilder(args);
-
 			// Add services to the container.
 
-			builder.Services.AddControllers(options =>
+			builder.Services.AddLogging();
+            builder.Services.AddControllers(options =>
 			{
 				// Serve every controller under a global "/api" prefix.
 				options.Conventions.Add(new Chezz.Conventions.RoutePrefixConvention("api"));
 			});
 
 			builder.Services.AddDbContext<ChezzDbContext>(options => options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+			builder.Services.AddSmtpConfiguration(builder.Configuration.GetRequiredSection("SmtpConfiguration"));
+			builder.Services.AddSingleton<IEmailSender, EmailSender>();
 
 			builder.Services.AddIdentityApiEndpoints<ChezzUser>()
 				.AddRoles<ChezzRole>()
