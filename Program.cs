@@ -19,7 +19,7 @@ namespace Chezz
             builder.Services.AddControllers(options =>
 			{
 				// Serve every controller under a global "/api" prefix.
-				options.Conventions.Add(new Chezz.Conventions.RoutePrefixConvention("api"));
+				options.Conventions.Add(new Conventions.RoutePrefixConvention("api"));
 			});
 
 			builder.Services.AddDbContext<ChezzDbContext>(options => options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
