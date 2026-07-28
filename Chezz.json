@@ -5,20 +5,42 @@
     "version": "1.0"
   },
   "paths": {
-    "/api/identity/register": {
+    "/ws": {
+      "get": {
+        "tags": [
+          "Game"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/register": {
       "post": {
         "tags": [
-          "Chezz"
+          "Identity"
         ],
+        "operationId": "Register",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/RegisterRequest"
               }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRequest"
+              }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "200": {
@@ -37,11 +59,12 @@
         }
       }
     },
-    "/api/identity/login": {
+    "/login": {
       "post": {
         "tags": [
-          "Chezz"
+          "Identity"
         ],
+        "operationId": "Login",
         "parameters": [
           {
             "name": "useCookies",
@@ -64,9 +87,18 @@
               "schema": {
                 "$ref": "#/components/schemas/LoginRequest"
               }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "200": {
@@ -82,20 +114,30 @@
         }
       }
     },
-    "/api/identity/refresh": {
+    "/refresh": {
       "post": {
         "tags": [
-          "Chezz"
+          "Identity"
         ],
+        "operationId": "Refresh",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/RefreshRequest"
               }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshRequest"
+              }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "200": {
@@ -111,17 +153,16 @@
         }
       }
     },
-    "/api/identity/confirmEmail": {
+    "/confirmEmail": {
       "get": {
         "tags": [
-          "Chezz"
+          "Identity"
         ],
-        "operationId": "MapCustomIdentityApi-/api/identity/confirmEmail",
+        "operationId": "ConfirmEmail",
         "parameters": [
           {
             "name": "userId",
             "in": "query",
-            "required": true,
             "schema": {
               "type": "string"
             }
@@ -129,7 +170,6 @@
           {
             "name": "code",
             "in": "query",
-            "required": true,
             "schema": {
               "type": "string"
             }
@@ -149,20 +189,30 @@
         }
       }
     },
-    "/api/identity/resendConfirmationEmail": {
+    "/resendConfirmationEmail": {
       "post": {
         "tags": [
-          "Chezz"
+          "Identity"
         ],
+        "operationId": "ResendConfirmationEmail",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/ResendConfirmationEmailRequest"
               }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResendConfirmationEmailRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResendConfirmationEmailRequest"
+              }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "200": {
@@ -171,20 +221,30 @@
         }
       }
     },
-    "/api/identity/forgotPassword": {
+    "/forgotPassword": {
       "post": {
         "tags": [
-          "Chezz"
+          "Identity"
         ],
+        "operationId": "ForgotPassword",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/ForgotPasswordRequest"
               }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForgotPasswordRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForgotPasswordRequest"
+              }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "200": {
@@ -203,20 +263,30 @@
         }
       }
     },
-    "/api/identity/resetPassword": {
+    "/resetPassword": {
       "post": {
         "tags": [
-          "Chezz"
+          "Identity"
         ],
+        "operationId": "ResetPassword",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/ResetPasswordRequest"
               }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordRequest"
+              }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "200": {
@@ -235,10 +305,53 @@
         }
       }
     },
-    "/api/identity/manage/info": {
+    "/manage/info": {
       "get": {
         "tags": [
-          "Chezz"
+          "Identity"
+        ],
+        "parameters": [
+          {
+            "name": "Claims",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/Claim"
+              }
+            }
+          },
+          {
+            "name": "Identities",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/ClaimsIdentity"
+              }
+            }
+          },
+          {
+            "name": "Identity.Name",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Identity.AuthenticationType",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Identity.IsAuthenticated",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
         ],
         "responses": {
           "200": {
@@ -268,7 +381,50 @@
       },
       "post": {
         "tags": [
-          "Chezz"
+          "Identity"
+        ],
+        "parameters": [
+          {
+            "name": "Claims",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/Claim"
+              }
+            }
+          },
+          {
+            "name": "Identities",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/ClaimsIdentity"
+              }
+            }
+          },
+          {
+            "name": "Identity.Name",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Identity.AuthenticationType",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Identity.IsAuthenticated",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
         ],
         "requestBody": {
           "content": {
@@ -276,9 +432,18 @@
               "schema": {
                 "$ref": "#/components/schemas/InfoRequest"
               }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InfoRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/InfoRequest"
+              }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "200": {
@@ -303,18 +468,6 @@
           },
           "404": {
             "description": "Not Found"
-          }
-        }
-      }
-    },
-    "/ws": {
-      "get": {
-        "tags": [
-          "Game"
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
           }
         }
       }
@@ -346,6 +499,96 @@
           "refreshToken": {
             "type": "string",
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Claim": {
+        "type": "object",
+        "properties": {
+          "issuer": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "originalIssuer": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "properties": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true,
+            "readOnly": true
+          },
+          "subject": {
+            "$ref": "#/components/schemas/ClaimsIdentity"
+          },
+          "type": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "value": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "valueType": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ClaimsIdentity": {
+        "type": "object",
+        "properties": {
+          "authenticationType": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "isAuthenticated": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "actor": {
+            "$ref": "#/components/schemas/ClaimsIdentity"
+          },
+          "bootstrapContext": {
+            "nullable": true
+          },
+          "claims": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Claim"
+            },
+            "nullable": true,
+            "readOnly": true
+          },
+          "label": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "nameClaimType": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "roleClaimType": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
           }
         },
         "additionalProperties": false
@@ -437,24 +680,16 @@
       },
       "LoginRequest": {
         "required": [
-          "email",
-          "password"
+          "password",
+          "username"
         ],
         "type": "object",
         "properties": {
-          "email": {
+          "username": {
             "type": "string",
             "nullable": true
           },
           "password": {
-            "type": "string",
-            "nullable": true
-          },
-          "twoFactorCode": {
-            "type": "string",
-            "nullable": true
-          },
-          "twoFactorRecoveryCode": {
             "type": "string",
             "nullable": true
           }
@@ -477,10 +712,15 @@
       "RegisterRequest": {
         "required": [
           "email",
-          "password"
+          "password",
+          "username"
         ],
         "type": "object",
         "properties": {
+          "username": {
+            "type": "string",
+            "nullable": true
+          },
           "email": {
             "type": "string",
             "nullable": true
@@ -532,10 +772,10 @@
   },
   "tags": [
     {
-      "name": "Chezz"
+      "name": "Game"
     },
     {
-      "name": "Game"
+      "name": "Identity"
     }
   ]
 }

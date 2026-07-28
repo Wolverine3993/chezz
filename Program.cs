@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Chezz.SMTP;
+using Chezz.Identity;
 
 namespace Chezz
 {
@@ -28,7 +29,10 @@ namespace Chezz
 			builder.Services.AddSmtpConfiguration(builder.Configuration.GetRequiredSection("SmtpConfiguration"));
 			builder.Services.AddSingleton<IEmailSender, EmailSender>();
 
-			builder.Services.AddIdentityApiEndpoints<ChezzUser>()
+			builder.Services.AddIdentityApiEndpoints<ChezzUser>(options =>
+			{
+				options.User.RequireUniqueEmail = true;
+			})
 				.AddRoles<ChezzRole>()
 				.AddEntityFrameworkStores<ChezzDbContext>()
 				.AddDefaultTokenProviders();
@@ -36,6 +40,17 @@ namespace Chezz
 			// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 			builder.Services.AddEndpointsApiExplorer();
 			builder.Services.AddSwaggerGen();
+
+			builder.Services.AddCors(options =>
+			{
+				options.AddDefaultPolicy(policy =>
+				{
+					policy.WithOrigins("http://localhost:3000")
+					.AllowAnyOrigin()
+					.AllowAnyMethod()
+					.AllowAnyHeader();
+				});
+			});
 
 			var app = builder.Build();
 
@@ -55,14 +70,12 @@ namespace Chezz
 
 			app.UseHttpsRedirection();
 			app.UseWebSockets();
+			app.UseCors();
 
 			app.UseAuthentication();
 			app.UseAuthorization();
 
 			app.MapControllers();
-
-			app.MapGroup("/api/identity")
-				.MapCustomIdentityApi<ChezzUser>();
 
 			app.Run();
 		}

@@ -16,8 +16,9 @@ using System.Diagnostics;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
+using System.Text.RegularExpressions;
 
-namespace Microsoft.AspNetCore.Routing;
+namespace Chezz.Identity;
 
 /// <summary>
 /// Provides extension methods for <see cref="IEndpointRouteBuilder"/> to add identity endpoints.
@@ -66,14 +67,25 @@ public static class IdentityApiEndpointRouteBuilderExtensions
             var userStore = sp.GetRequiredService<IUserStore<TUser>>();
             var emailStore = (IUserEmailStore<TUser>)userStore;
             var email = registration.Email;
+            var username = registration.Username;
 
             if (string.IsNullOrEmpty(email) || !_emailAddressAttribute.IsValid(email))
             {
                 return CreateValidationProblem(IdentityResult.Failed(userManager.ErrorDescriber.InvalidEmail(email)));
             }
 
+            if (string.IsNullOrEmpty(username) || !IsValidUsername(username))
+            {
+                return CreateValidationProblem(IdentityResult.Failed(userManager.ErrorDescriber.InvalidUserName(username)));
+            }
+
+            if (await userStore.FindByNameAsync(username, CancellationToken.None) is not null)
+            {
+                return CreateValidationProblem(IdentityResult.Failed(userManager.ErrorDescriber.DuplicateUserName(username)));
+            }
+
             var user = new TUser();
-            await userStore.SetUserNameAsync(user, email, CancellationToken.None);
+            await userStore.SetUserNameAsync(user, username, CancellationToken.None);
             await emailStore.SetEmailAsync(user, email, CancellationToken.None);
             var result = await userManager.CreateAsync(user, registration.Password);
 
@@ -95,19 +107,7 @@ public static class IdentityApiEndpointRouteBuilderExtensions
             var isPersistent = (useCookies == true) && (useSessionCookies != true);
             signInManager.AuthenticationScheme = useCookieScheme ? IdentityConstants.ApplicationScheme : IdentityConstants.BearerScheme;
 
-            var result = await signInManager.PasswordSignInAsync(login.Email, login.Password, isPersistent, lockoutOnFailure: true);
-
-            if (result.RequiresTwoFactor)
-            {
-                if (!string.IsNullOrEmpty(login.TwoFactorCode))
-                {
-                    result = await signInManager.TwoFactorAuthenticatorSignInAsync(login.TwoFactorCode, isPersistent, rememberClient: isPersistent);
-                }
-                else if (!string.IsNullOrEmpty(login.TwoFactorRecoveryCode))
-                {
-                    result = await signInManager.TwoFactorRecoveryCodeSignInAsync(login.TwoFactorRecoveryCode);
-                }
-            }
+            var result = await signInManager.PasswordSignInAsync(login.Username, login.Password, isPersistent, lockoutOnFailure: true);
 
             if (!result.Succeeded)
             {
@@ -342,6 +342,12 @@ public static class IdentityApiEndpointRouteBuilderExtensions
         }
 
         return new IdentityEndpointsConventionBuilder(routeGroup);
+    }
+
+    private static bool IsValidUsername(string username)
+    {
+        var usernameRegex = @"^[a-zA-Z\d\._\-@\+]{3,16}$";
+        return Regex.Match(username, usernameRegex).Success;
     }
 
     private static ValidationProblem CreateValidationProblem(string errorCode, string errorDescription) =>
