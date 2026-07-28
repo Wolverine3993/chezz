@@ -22,6 +22,7 @@ namespace Chezz
 				options.Conventions.Add(new Conventions.RoutePrefixConvention("api"));
 			});
 
+            
 			builder.Services.AddDbContext<ChezzDbContext>(options => options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 			builder.Services.AddSmtpConfiguration(builder.Configuration.GetRequiredSection("SmtpConfiguration"));
@@ -53,6 +54,7 @@ namespace Chezz
 			}
 
 			app.UseHttpsRedirection();
+			app.UseWebSockets();
 
 			app.UseAuthentication();
 			app.UseAuthorization();

@@ -60,18 +60,16 @@ namespace Chezz.SMTP
                 Text = htmlMessage
             };
 
-            using (var client = new SmtpClient())
-            {
-                await client.ConnectAsync("smtp.gmail.com", 465, true);
+            using var client = new SmtpClient();
+            await client.ConnectAsync("smtp.gmail.com", 465, true);
 
-                await client.AuthenticateAsync(new SaslMechanismOAuth2(_configuration.ClientAddress, _credentials.AccessToken));
-                _logger.LogInformation("SMTP client authenticated successfully");
+            await client.AuthenticateAsync(new SaslMechanismOAuth2(_configuration.ClientAddress, _credentials.AccessToken));
+            _logger.LogInformation("SMTP client authenticated successfully");
 
-                await client.SendAsync(mimeEmail);
-                _logger.LogInformation("Successfully sent an email to {0}", email);
+            await client.SendAsync(mimeEmail);
+            _logger.LogInformation("Successfully sent an email to {0}", email);
 
-                await client.DisconnectAsync(true);
-            }
+            await client.DisconnectAsync(true);
         }
     }
 }
