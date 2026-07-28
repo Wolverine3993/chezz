@@ -125,7 +125,7 @@
         "tags": [
           "Identity"
         ],
-        "operationId": "Register",
+        "operationId": "Identity_Register",
         "requestBody": {
           "content": {
             "application/json": {
@@ -167,7 +167,7 @@
         "tags": [
           "Identity"
         ],
-        "operationId": "Login",
+        "operationId": "Identity_Login",
         "parameters": [
           {
             "name": "useCookies",
@@ -222,7 +222,7 @@
         "tags": [
           "Identity"
         ],
-        "operationId": "Refresh",
+        "operationId": "Identity_Refresh",
         "requestBody": {
           "content": {
             "application/json": {
@@ -261,6 +261,7 @@
         "tags": [
           "Identity"
         ],
+        "operationId": "Identity_ConfirmEmail",
         "parameters": [
           {
             "name": "userId",
@@ -296,7 +297,7 @@
         "tags": [
           "Identity"
         ],
-        "operationId": "ResendConfirmationEmail",
+        "operationId": "Identity_ResendConfirmationEmail",
         "requestBody": {
           "content": {
             "application/json": {
@@ -328,7 +329,7 @@
         "tags": [
           "Identity"
         ],
-        "operationId": "ForgotPassword",
+        "operationId": "Identity_ForgotPassword",
         "requestBody": {
           "content": {
             "application/json": {
@@ -370,7 +371,7 @@
         "tags": [
           "Identity"
         ],
-        "operationId": "ResetPassword",
+        "operationId": "Identity_ResetPassword",
         "requestBody": {
           "content": {
             "application/json": {
@@ -412,6 +413,7 @@
         "tags": [
           "Identity"
         ],
+        "operationId": "Identity_GetInfo",
         "parameters": [
           {
             "name": "Claims",
@@ -485,6 +487,7 @@
         "tags": [
           "Identity"
         ],
+        "operationId": "Identity_PostInfo",
         "parameters": [
           {
             "name": "Claims",
@@ -652,6 +655,96 @@
         ],
         "type": "integer",
         "format": "int32"
+      },
+      "Claim": {
+        "type": "object",
+        "properties": {
+          "issuer": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "originalIssuer": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "properties": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true,
+            "readOnly": true
+          },
+          "subject": {
+            "$ref": "#/components/schemas/ClaimsIdentity"
+          },
+          "type": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "value": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "valueType": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ClaimsIdentity": {
+        "type": "object",
+        "properties": {
+          "authenticationType": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "isAuthenticated": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "actor": {
+            "$ref": "#/components/schemas/ClaimsIdentity"
+          },
+          "bootstrapContext": {
+            "nullable": true
+          },
+          "claims": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Claim"
+            },
+            "nullable": true,
+            "readOnly": true
+          },
+          "label": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "nameClaimType": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "roleClaimType": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false
       },
       "ForgotPasswordRequest": {
         "required": [
@@ -861,7 +954,7 @@
       "name": "Chess"
     },
     {
-      "name": "Chezz"
+      "name": "Identity"
     }
   ]
 }
