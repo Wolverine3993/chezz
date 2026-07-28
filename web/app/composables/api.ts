@@ -1,6 +1,27 @@
 import { makeApi, Zodios, type ZodiosOptions } from "@zodios/core";
 import { z } from "zod";
 
+type Claim = Partial<{
+  issuer: string | null;
+  originalIssuer: string | null;
+  properties: {};
+  subject: ClaimsIdentity;
+  type: string | null;
+  value: string | null;
+  valueType: string | null;
+}>;
+type ClaimsIdentity = Partial<{
+  authenticationType: string | null;
+  isAuthenticated: boolean;
+  actor: ClaimsIdentity;
+  bootstrapContext: unknown;
+  claims: Array<Claim> | null;
+  label: string | null;
+  name: string | null;
+  nameClaimType: string | null;
+  roleClaimType: string | null;
+}>;
+
 const LobbyInformation = z
   .object({
     playerUsernames: z.array(z.string()).nullable(),
@@ -28,14 +49,13 @@ const ChessGameState = z.object({
   yourTurn: z.boolean(),
 });
 const RegisterRequest = z.object({
+  username: z.string().nullable(),
   email: z.string().nullable(),
   password: z.string().nullable(),
 });
 const LoginRequest = z.object({
-  email: z.string().nullable(),
+  username: z.string().nullable(),
   password: z.string().nullable(),
-  twoFactorCode: z.string().nullish(),
-  twoFactorRecoveryCode: z.string().nullish(),
 });
 const AccessTokenResponse = z.object({
   tokenType: z.string().nullish(),
@@ -53,22 +73,34 @@ const ResetPasswordRequest = z.object({
   resetCode: z.string().nullable(),
   newPassword: z.string().nullable(),
 });
-const TwoFactorRequest = z
-  .object({
-    enable: z.boolean().nullable(),
-    twoFactorCode: z.string().nullable(),
-    resetSharedKey: z.boolean(),
-    resetRecoveryCodes: z.boolean(),
-    forgetMachine: z.boolean(),
-  })
-  .partial();
-const TwoFactorResponse = z.object({
-  sharedKey: z.string().nullable(),
-  recoveryCodesLeft: z.number().int(),
-  recoveryCodes: z.array(z.string()).nullish(),
-  isTwoFactorEnabled: z.boolean(),
-  isMachineRemembered: z.boolean(),
-});
+const ClaimsIdentity: z.ZodType<ClaimsIdentity> = z.lazy(() =>
+  z
+    .object({
+      authenticationType: z.string().nullable(),
+      isAuthenticated: z.boolean(),
+      actor: ClaimsIdentity,
+      bootstrapContext: z.unknown().nullable(),
+      claims: z.array(Claim).nullable(),
+      label: z.string().nullable(),
+      name: z.string().nullable(),
+      nameClaimType: z.string().nullable(),
+      roleClaimType: z.string().nullable(),
+    })
+    .partial()
+);
+const Claim: z.ZodType<Claim> = z.lazy(() =>
+  z
+    .object({
+      issuer: z.string().nullable(),
+      originalIssuer: z.string().nullable(),
+      properties: z.record(z.string()).nullable(),
+      subject: ClaimsIdentity,
+      type: z.string().nullable(),
+      value: z.string().nullable(),
+      valueType: z.string().nullable(),
+    })
+    .partial()
+);
 const InfoResponse = z.object({
   email: z.string().nullable(),
   isEmailConfirmed: z.boolean(),
@@ -94,8 +126,8 @@ export const schemas = {
   ResendConfirmationEmailRequest,
   ForgotPasswordRequest,
   ResetPasswordRequest,
-  TwoFactorRequest,
-  TwoFactorResponse,
+  ClaimsIdentity,
+  Claim,
   InfoResponse,
   InfoRequest,
 };
@@ -139,18 +171,18 @@ const endpoints = makeApi([
   {
     method: "get",
     path: "/api/identity/confirmEmail",
-    alias: "getApiidentityconfirmEmail",
+    alias: "Identity_ConfirmEmail",
     requestFormat: "json",
     parameters: [
       {
         name: "userId",
         type: "Query",
-        schema: z.string(),
+        schema: z.string().optional(),
       },
       {
         name: "code",
         type: "Query",
-        schema: z.string(),
+        schema: z.string().optional(),
       },
       {
         name: "changedEmail",
@@ -163,7 +195,7 @@ const endpoints = makeApi([
   {
     method: "post",
     path: "/api/identity/forgotPassword",
-    alias: "postApiidentityforgotPassword",
+    alias: "Identity_ForgotPassword",
     requestFormat: "json",
     parameters: [
       {
@@ -184,7 +216,7 @@ const endpoints = makeApi([
   {
     method: "post",
     path: "/api/identity/login",
-    alias: "postApiidentitylogin",
+    alias: "Identity_Login",
     requestFormat: "json",
     parameters: [
       {
@@ -206,36 +238,37 @@ const endpoints = makeApi([
     response: AccessTokenResponse,
   },
   {
-    method: "post",
-    path: "/api/identity/manage/2fa",
-    alias: "postApiidentitymanage2fa",
+    method: "get",
+    path: "/api/identity/manage/info",
+    alias: "Identity_GetInfo",
     requestFormat: "json",
     parameters: [
       {
-        name: "body",
-        type: "Body",
-        schema: TwoFactorRequest,
-      },
-    ],
-    response: TwoFactorResponse,
-    errors: [
-      {
-        status: 400,
-        description: `Bad Request`,
-        schema: z.void(),
+        name: "Claims",
+        type: "Query",
+        schema: z.array(Claim).optional(),
       },
       {
-        status: 404,
-        description: `Not Found`,
-        schema: z.void(),
+        name: "Identities",
+        type: "Query",
+        schema: z.array(ClaimsIdentity).optional(),
+      },
+      {
+        name: "Identity.Name",
+        type: "Query",
+        schema: z.string().optional(),
+      },
+      {
+        name: "Identity.AuthenticationType",
+        type: "Query",
+        schema: z.string().optional(),
+      },
+      {
+        name: "Identity.IsAuthenticated",
+        type: "Query",
+        schema: z.boolean().optional(),
       },
     ],
-  },
-  {
-    method: "get",
-    path: "/api/identity/manage/info",
-    alias: "getApiidentitymanageinfo",
-    requestFormat: "json",
     response: InfoResponse,
     errors: [
       {
@@ -253,13 +286,38 @@ const endpoints = makeApi([
   {
     method: "post",
     path: "/api/identity/manage/info",
-    alias: "postApiidentitymanageinfo",
+    alias: "Identity_PostInfo",
     requestFormat: "json",
     parameters: [
       {
         name: "body",
         type: "Body",
         schema: InfoRequest,
+      },
+      {
+        name: "Claims",
+        type: "Query",
+        schema: z.array(Claim).optional(),
+      },
+      {
+        name: "Identities",
+        type: "Query",
+        schema: z.array(ClaimsIdentity).optional(),
+      },
+      {
+        name: "Identity.Name",
+        type: "Query",
+        schema: z.string().optional(),
+      },
+      {
+        name: "Identity.AuthenticationType",
+        type: "Query",
+        schema: z.string().optional(),
+      },
+      {
+        name: "Identity.IsAuthenticated",
+        type: "Query",
+        schema: z.boolean().optional(),
       },
     ],
     response: InfoResponse,
@@ -279,7 +337,7 @@ const endpoints = makeApi([
   {
     method: "post",
     path: "/api/identity/refresh",
-    alias: "postApiidentityrefresh",
+    alias: "Identity_Refresh",
     requestFormat: "json",
     parameters: [
       {
@@ -293,7 +351,7 @@ const endpoints = makeApi([
   {
     method: "post",
     path: "/api/identity/register",
-    alias: "postApiidentityregister",
+    alias: "Identity_Register",
     requestFormat: "json",
     parameters: [
       {
@@ -314,7 +372,7 @@ const endpoints = makeApi([
   {
     method: "post",
     path: "/api/identity/resendConfirmationEmail",
-    alias: "postApiidentityresendConfirmationEmail",
+    alias: "Identity_ResendConfirmationEmail",
     requestFormat: "json",
     parameters: [
       {
@@ -328,7 +386,7 @@ const endpoints = makeApi([
   {
     method: "post",
     path: "/api/identity/resetPassword",
-    alias: "postApiidentityresetPassword",
+    alias: "Identity_ResetPassword",
     requestFormat: "json",
     parameters: [
       {

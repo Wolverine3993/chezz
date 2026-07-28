@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.EntityFrameworkCore;
+using Chezz.SMTP;
+using Chezz.Identity;
 
 namespace Chezz
 {
@@ -31,7 +33,10 @@ namespace Chezz
 			builder.Services.AddSmtpConfiguration(builder.Configuration.GetRequiredSection("SmtpConfiguration"));
 			builder.Services.AddSingleton<IEmailSender, EmailSender>();
 
-			builder.Services.AddIdentityApiEndpoints<ChezzUser>()
+			builder.Services.AddIdentityApiEndpoints<ChezzUser>(options =>
+			{
+				options.User.RequireUniqueEmail = true;
+			})
 				.AddRoles<ChezzRole>()
 				.AddEntityFrameworkStores<ChezzDbContext>()
 				.AddDefaultTokenProviders();
@@ -61,6 +66,17 @@ namespace Chezz
 			builder.Services.AddProblemDetails();
 			builder.Services.AddExceptionHandler<Errors.AppExceptionHandler>();
 
+			builder.Services.AddCors(options =>
+			{
+				options.AddDefaultPolicy(policy =>
+				{
+					policy.WithOrigins("http://localhost:3000")
+					.AllowAnyOrigin()
+					.AllowAnyMethod()
+					.AllowAnyHeader();
+				});
+			});
+
 			var app = builder.Build();
 
 			// Configure the HTTP request pipeline.
@@ -79,17 +95,14 @@ namespace Chezz
 
 			app.UseHttpsRedirection();
 			app.UseWebSockets();
+			app.UseCors();
 
 			app.UseExceptionHandler();
 
 			app.UseAuthentication();
 			app.UseAuthorization();
 
-
 			app.MapControllers();
-
-			app.MapGroup("/api/identity")
-				.MapIdentityApi<ChezzUser>();
 
 			app.Run();
 		}
