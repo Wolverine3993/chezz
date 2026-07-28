@@ -4,7 +4,7 @@ namespace Chezz.Controllers;
 
 public class GameController : ControllerBase
 {
-    [Route("/ws")]
+    [HttpGet("/ws")]
     public async Task Get()
     {
         if (!HttpContext.WebSockets.IsWebSocketRequest)
@@ -14,6 +14,5 @@ public class GameController : ControllerBase
         }
         
         using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
-        
     }
 }
