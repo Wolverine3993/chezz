@@ -2,6 +2,7 @@ import { makeApi, Zodios, type ZodiosOptions } from "@zodios/core";
 import { z } from "zod";
 
 const RegisterRequest = z.object({
+  username: z.string().nullable(),
   email: z.string().nullable(),
   password: z.string().nullable(),
 });

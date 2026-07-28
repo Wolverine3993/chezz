@@ -26,7 +26,6 @@ namespace Chezz.Controllers
         LinkGenerator linkGenerator) : ControllerBase
     {
         private readonly EmailAddressAttribute _emailAddressAttribute = new();
-        string? confirmEmailEndpointName = null;
 
         [HttpPost("/register", Name = "Register")]
         public async Task<Results<Ok, ValidationProblem>> Register(
