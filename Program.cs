@@ -1,9 +1,13 @@
 
 using Chezz.Database;
 using Chezz.Database.Models;
+using Chezz.Game;
+using Chezz.Game.Games.Chess;
+using Chezz.SMTP;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.EntityFrameworkCore;
 using Chezz.SMTP;
 using Chezz.Identity;
 
@@ -17,13 +21,13 @@ namespace Chezz
 			// Add services to the container.
 
 			builder.Services.AddLogging();
-            builder.Services.AddControllers(options =>
+			builder.Services.AddControllers(options =>
 			{
 				// Serve every controller under a global "/api" prefix.
 				options.Conventions.Add(new Conventions.RoutePrefixConvention("api"));
 			});
 
-            
+
 			builder.Services.AddDbContext<ChezzDbContext>(options => options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 			builder.Services.AddSmtpConfiguration(builder.Configuration.GetRequiredSection("SmtpConfiguration"));
@@ -39,7 +43,28 @@ namespace Chezz
 
 			// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 			builder.Services.AddEndpointsApiExplorer();
-			builder.Services.AddSwaggerGen();
+			builder.Services.AddSwaggerGen(options =>
+			{
+				// operationId => "{ConcreteController}_{RouteName ?? ActionName}"
+				// The controller prefix keeps ids unique across concrete controllers
+				// that inherit endpoints from the generic GameController base.
+				options.CustomOperationIds(apiDescription =>
+				{
+					if (apiDescription.ActionDescriptor is not ControllerActionDescriptor descriptor)
+						return null;
+
+					var action = descriptor.AttributeRouteInfo?.Name ?? descriptor.ActionName;
+					return $"{descriptor.ControllerName}_{action}";
+				});
+			});
+
+			// Game registries
+			builder.Services.AddSingleton<LobbyRegistry>();
+			builder.Services.AddSingleton<GameRegistry<ChessMove, ChessPiece, ChessGameState, ChessGameStore, ChessGameImplementation>>();
+
+			// Global error handling
+			builder.Services.AddProblemDetails();
+			builder.Services.AddExceptionHandler<Errors.AppExceptionHandler>();
 
 			builder.Services.AddCors(options =>
 			{
@@ -71,6 +96,8 @@ namespace Chezz
 			app.UseHttpsRedirection();
 			app.UseWebSockets();
 			app.UseCors();
+
+			app.UseExceptionHandler();
 
 			app.UseAuthentication();
 			app.UseAuthorization();
