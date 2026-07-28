@@ -5,7 +5,7 @@ export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
   devtools: { enabled: false },
   ssr: false,
-    css: ['./app/assets/main.css'],
+  css: ["./app/assets/main.css"],
   nitro: {
     devProxy: {
       // Reverse-proxy /api to the .NET backend in dev so the browser stays
