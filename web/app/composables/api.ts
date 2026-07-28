@@ -1,6 +1,27 @@
 import { makeApi, Zodios, type ZodiosOptions } from "@zodios/core";
 import { z } from "zod";
 
+type Claim = Partial<{
+  issuer: string | null;
+  originalIssuer: string | null;
+  properties: {};
+  subject: ClaimsIdentity;
+  type: string | null;
+  value: string | null;
+  valueType: string | null;
+}>;
+type ClaimsIdentity = Partial<{
+  authenticationType: string | null;
+  isAuthenticated: boolean;
+  actor: ClaimsIdentity;
+  bootstrapContext: unknown;
+  claims: Array<Claim> | null;
+  label: string | null;
+  name: string | null;
+  nameClaimType: string | null;
+  roleClaimType: string | null;
+}>;
+
 const LobbyInformation = z
   .object({
     playerUsernames: z.array(z.string()).nullable(),
@@ -150,7 +171,7 @@ const endpoints = makeApi([
   {
     method: "get",
     path: "/api/identity/confirmEmail",
-    alias: "getApiidentityconfirmEmail",
+    alias: "Identity_ConfirmEmail",
     requestFormat: "json",
     parameters: [
       {
@@ -174,7 +195,7 @@ const endpoints = makeApi([
   {
     method: "post",
     path: "/api/identity/forgotPassword",
-    alias: "ForgotPassword",
+    alias: "Identity_ForgotPassword",
     requestFormat: "json",
     parameters: [
       {
@@ -195,7 +216,7 @@ const endpoints = makeApi([
   {
     method: "post",
     path: "/api/identity/login",
-    alias: "Login",
+    alias: "Identity_Login",
     requestFormat: "json",
     parameters: [
       {
@@ -219,7 +240,7 @@ const endpoints = makeApi([
   {
     method: "get",
     path: "/api/identity/manage/info",
-    alias: "getApiidentitymanageinfo",
+    alias: "Identity_GetInfo",
     requestFormat: "json",
     parameters: [
       {
@@ -265,7 +286,7 @@ const endpoints = makeApi([
   {
     method: "post",
     path: "/api/identity/manage/info",
-    alias: "postApiidentitymanageinfo",
+    alias: "Identity_PostInfo",
     requestFormat: "json",
     parameters: [
       {
@@ -316,7 +337,7 @@ const endpoints = makeApi([
   {
     method: "post",
     path: "/api/identity/refresh",
-    alias: "Refresh",
+    alias: "Identity_Refresh",
     requestFormat: "json",
     parameters: [
       {
@@ -330,7 +351,7 @@ const endpoints = makeApi([
   {
     method: "post",
     path: "/api/identity/register",
-    alias: "Register",
+    alias: "Identity_Register",
     requestFormat: "json",
     parameters: [
       {
@@ -351,7 +372,7 @@ const endpoints = makeApi([
   {
     method: "post",
     path: "/api/identity/resendConfirmationEmail",
-    alias: "ResendConfirmationEmail",
+    alias: "Identity_ResendConfirmationEmail",
     requestFormat: "json",
     parameters: [
       {
@@ -365,7 +386,7 @@ const endpoints = makeApi([
   {
     method: "post",
     path: "/api/identity/resetPassword",
-    alias: "ResetPassword",
+    alias: "Identity_ResetPassword",
     requestFormat: "json",
     parameters: [
       {
@@ -382,13 +403,6 @@ const endpoints = makeApi([
         schema: z.void(),
       },
     ],
-  },
-  {
-    method: "get",
-    path: "/ws",
-    alias: "getWs",
-    requestFormat: "json",
-    response: z.void(),
   },
 ]);
 
