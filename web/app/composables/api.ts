@@ -1,6 +1,32 @@
 import { makeApi, Zodios, type ZodiosOptions } from "@zodios/core";
 import { z } from "zod";
 
+const LobbyInformation = z
+  .object({
+    playerUsernames: z.array(z.string()).nullable(),
+    gameId: z.string().uuid().nullable(),
+  })
+  .partial();
+const ChessPieceEnum = z.union([
+  z.literal(0),
+  z.literal(1),
+  z.literal(2),
+  z.literal(3),
+  z.literal(4),
+  z.literal(5),
+]);
+const PieceColor = z.union([z.literal(0), z.literal(1)]);
+const ChessPiece = z
+  .object({
+    type: ChessPieceEnum,
+    playerId: z.string().nullable(),
+    color: PieceColor,
+  })
+  .partial();
+const ChessGameState = z.object({
+  board: z.array(ChessPiece).nullable(),
+  yourTurn: z.boolean(),
+});
 const RegisterRequest = z.object({
   email: z.string().nullable(),
   password: z.string().nullable(),
@@ -56,6 +82,11 @@ const InfoRequest = z
   .partial();
 
 export const schemas = {
+  LobbyInformation,
+  ChessPieceEnum,
+  PieceColor,
+  ChessPiece,
+  ChessGameState,
   RegisterRequest,
   LoginRequest,
   AccessTokenResponse,
@@ -72,8 +103,43 @@ export const schemas = {
 const endpoints = makeApi([
   {
     method: "get",
+    path: "/api/games/chess/game/:gameId/status",
+    alias: "Chess_GetGameStatus",
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "gameId",
+        type: "Path",
+        schema: z.string().uuid(),
+      },
+    ],
+    response: ChessGameState,
+  },
+  {
+    method: "get",
+    path: "/api/games/chess/lobby/:lobbyId/status",
+    alias: "Chess_GetLobbyStatus",
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "lobbyId",
+        type: "Path",
+        schema: z.string().uuid(),
+      },
+    ],
+    response: LobbyInformation,
+  },
+  {
+    method: "post",
+    path: "/api/games/chess/lobby/create",
+    alias: "Chess_CreateLobby",
+    requestFormat: "json",
+    response: z.string().uuid(),
+  },
+  {
+    method: "get",
     path: "/api/identity/confirmEmail",
-    alias: "MapIdentityApi-/api/identity/confirmEmail",
+    alias: "getApiidentityconfirmEmail",
     requestFormat: "json",
     parameters: [
       {

@@ -5,6 +5,121 @@
     "version": "1.0"
   },
   "paths": {
+    "/api/games/chess/lobby/create": {
+      "post": {
+        "tags": [
+          "Chess"
+        ],
+        "operationId": "Chess_CreateLobby",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/games/chess/lobby/{lobbyId}/status": {
+      "get": {
+        "tags": [
+          "Chess"
+        ],
+        "operationId": "Chess_GetLobbyStatus",
+        "parameters": [
+          {
+            "name": "lobbyId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/LobbyInformation"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LobbyInformation"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LobbyInformation"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/games/chess/game/{gameId}/status": {
+      "get": {
+        "tags": [
+          "Chess"
+        ],
+        "operationId": "Chess_GetGameStatus",
+        "parameters": [
+          {
+            "name": "gameId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChessGameState"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChessGameState"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChessGameState"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/identity/register": {
       "post": {
         "tags": [
@@ -116,7 +231,6 @@
         "tags": [
           "Chezz"
         ],
-        "operationId": "MapIdentityApi-/api/identity/confirmEmail",
         "parameters": [
           {
             "name": "userId",
@@ -380,6 +494,54 @@
         },
         "additionalProperties": false
       },
+      "ChessGameState": {
+        "required": [
+          "board",
+          "yourTurn"
+        ],
+        "type": "object",
+        "properties": {
+          "board": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ChessPiece"
+            },
+            "nullable": true
+          },
+          "yourTurn": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ChessPiece": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/ChessPieceEnum"
+          },
+          "playerId": {
+            "type": "string",
+            "nullable": true
+          },
+          "color": {
+            "$ref": "#/components/schemas/PieceColor"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ChessPieceEnum": {
+        "enum": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
       "ForgotPasswordRequest": {
         "required": [
           "email"
@@ -465,6 +627,24 @@
         },
         "additionalProperties": false
       },
+      "LobbyInformation": {
+        "type": "object",
+        "properties": {
+          "playerUsernames": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "gameId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "LoginRequest": {
         "required": [
           "email",
@@ -490,6 +670,14 @@
           }
         },
         "additionalProperties": false
+      },
+      "PieceColor": {
+        "enum": [
+          0,
+          1
+        ],
+        "type": "integer",
+        "format": "int32"
       },
       "RefreshRequest": {
         "required": [
@@ -617,6 +805,9 @@
     }
   },
   "tags": [
+    {
+      "name": "Chess"
+    },
     {
       "name": "Chezz"
     }
