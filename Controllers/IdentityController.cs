@@ -18,7 +18,7 @@ using System.Timers;
 
 namespace Chezz.Controllers
 {
-    [Route("/api/[controller]")]
+    [Route("/api/identity")]
     public class IdentityController(
         TimeProvider timeProvider,
         IOptionsMonitor<BearerTokenOptions> bearerTokenOptions,
@@ -27,7 +27,7 @@ namespace Chezz.Controllers
     {
         private readonly EmailAddressAttribute _emailAddressAttribute = new();
 
-        [HttpPost("/register", Name = "Register")]
+        [HttpPost("register", Name = "Register")]
         public async Task<Results<Ok, ValidationProblem>> Register(
             [FromBody] Chezz.Identity.RegisterRequest registration,
             [FromServices] IServiceProvider sp)
@@ -73,7 +73,7 @@ namespace Chezz.Controllers
             return TypedResults.Ok();
         }
 
-        [HttpPost("/login", Name = "Login")]
+        [HttpPost("login", Name = "Login")]
         public async Task<Results<Ok<AccessTokenResponse>, EmptyHttpResult, ProblemHttpResult>> Login(
             [FromBody] Chezz.Identity.LoginRequest login,
             [FromQuery] bool? useCookies,
@@ -97,7 +97,7 @@ namespace Chezz.Controllers
             return TypedResults.Empty;
         }
 
-        [HttpPost("/refresh", Name = "Refresh")]
+        [HttpPost("refresh", Name = "Refresh")]
         public async Task<Results<Ok<AccessTokenResponse>, UnauthorizedHttpResult, SignInHttpResult, ChallengeHttpResult>> Refresh(
             [FromBody] RefreshRequest refreshRequest,
             [FromServices] IServiceProvider sp)
@@ -119,7 +119,7 @@ namespace Chezz.Controllers
             return TypedResults.SignIn(newPrincipal, authenticationScheme: IdentityConstants.BearerScheme);
         }
 
-        [HttpGet("/confirmEmail", Name = "ConfirmEmail")]
+        [HttpGet("confirmEmail", Name = "ConfirmEmail")]
         public async Task<Results<ContentHttpResult, UnauthorizedHttpResult>> ConfirmEmail(
             [FromQuery] string userId,
             [FromQuery] string code,
@@ -168,10 +168,9 @@ namespace Chezz.Controllers
             return TypedResults.Text("Thank you for confirming your email.");
         }
 
-        [HttpPost("/resendConfirmationEmail", Name = "ResendConfirmationEmail")]
+        [HttpPost("resendConfirmationEmail", Name = "ResendConfirmationEmail")]
         public async Task<Ok> ResendConfirmationEmail(
             [FromBody] ResendConfirmationEmailRequest resendRequest,
-            HttpContext context,
             [FromServices] IServiceProvider sp)
         {
             var userManager = sp.GetRequiredService<UserManager<ChezzUser>>();
@@ -184,7 +183,7 @@ namespace Chezz.Controllers
             return TypedResults.Ok();
         }
 
-        [HttpPost("/forgotPassword", Name = "ForgotPassword")]
+        [HttpPost("forgotPassword", Name = "ForgotPassword")]
         public async Task<Results<Ok, ValidationProblem>> ForgotPassword(
             [FromBody] ForgotPasswordRequest resetRequest,
             [FromServices] IServiceProvider sp)
@@ -205,7 +204,7 @@ namespace Chezz.Controllers
             return TypedResults.Ok();
         }
 
-        [HttpPost("/resetPassword", Name = "ResetPassword")]
+        [HttpPost("resetPassword", Name = "ResetPassword")]
         public async Task<Results<Ok, ValidationProblem>> ResetPassword(
             [FromBody] ResetPasswordRequest resetRequest,
             [FromServices] IServiceProvider sp)
@@ -240,7 +239,7 @@ namespace Chezz.Controllers
             return TypedResults.Ok();
         }
 
-        [HttpGet("/manage/info")]
+        [HttpGet("manage/info")]
         public async Task<Results<Ok<InfoResponse>, ValidationProblem, NotFound>> GetInfo(
             ClaimsPrincipal claimsPrincipal,
             [FromServices] IServiceProvider sp)
@@ -254,7 +253,7 @@ namespace Chezz.Controllers
             return TypedResults.Ok(await CreateInfoResponseAsync(user, userManager));
         }
 
-        [HttpPost("/manage/info")]
+        [HttpPost("manage/info")]
         public async Task<Results<Ok<InfoResponse>, ValidationProblem, NotFound>> PostInfo(
             ClaimsPrincipal claimsPrincipal,
             [FromBody] InfoRequest infoRequest,
