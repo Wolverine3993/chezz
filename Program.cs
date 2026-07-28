@@ -59,11 +59,10 @@ namespace Chezz
 			app.UseAuthentication();
 			app.UseAuthorization();
 
-
 			app.MapControllers();
 
 			app.MapGroup("/api/identity")
-				.MapIdentityApi<ChezzUser>();
+				.MapCustomIdentityApi<ChezzUser>();
 
 			app.Run();
 		}

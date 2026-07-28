@@ -116,7 +116,7 @@
         "tags": [
           "Chezz"
         ],
-        "operationId": "MapIdentityApi-/api/identity/confirmEmail",
+        "operationId": "MapCustomIdentityApi-/api/identity/confirmEmail",
         "parameters": [
           {
             "name": "userId",
@@ -235,48 +235,6 @@
         }
       }
     },
-    "/api/identity/manage/2fa": {
-      "post": {
-        "tags": [
-          "Chezz"
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/TwoFactorRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TwoFactorResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        }
-      }
-    },
     "/api/identity/manage/info": {
       "get": {
         "tags": [
@@ -345,6 +303,18 @@
           },
           "404": {
             "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/ws": {
+      "get": {
+        "tags": [
+          "Game"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
           }
         }
       }
@@ -557,68 +527,15 @@
           }
         },
         "additionalProperties": false
-      },
-      "TwoFactorRequest": {
-        "type": "object",
-        "properties": {
-          "enable": {
-            "type": "boolean",
-            "nullable": true
-          },
-          "twoFactorCode": {
-            "type": "string",
-            "nullable": true
-          },
-          "resetSharedKey": {
-            "type": "boolean"
-          },
-          "resetRecoveryCodes": {
-            "type": "boolean"
-          },
-          "forgetMachine": {
-            "type": "boolean"
-          }
-        },
-        "additionalProperties": false
-      },
-      "TwoFactorResponse": {
-        "required": [
-          "isMachineRemembered",
-          "isTwoFactorEnabled",
-          "recoveryCodesLeft",
-          "sharedKey"
-        ],
-        "type": "object",
-        "properties": {
-          "sharedKey": {
-            "type": "string",
-            "nullable": true
-          },
-          "recoveryCodesLeft": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "recoveryCodes": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "nullable": true
-          },
-          "isTwoFactorEnabled": {
-            "type": "boolean"
-          },
-          "isMachineRemembered": {
-            "type": "boolean"
-          }
-        },
-        "additionalProperties": false
       }
     }
   },
   "tags": [
     {
       "name": "Chezz"
+    },
+    {
+      "name": "Game"
     }
   ]
 }
