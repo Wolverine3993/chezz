@@ -20,9 +20,9 @@ namespace Chezz.Controllers
 {
     [Route("/api/[controller]")]
     public class IdentityController(
-        TimeProvider timeProvider, 
-        IOptionsMonitor<BearerTokenOptions> bearerTokenOptions, 
-        IEmailSender emailSender, 
+        TimeProvider timeProvider,
+        IOptionsMonitor<BearerTokenOptions> bearerTokenOptions,
+        IEmailSender emailSender,
         LinkGenerator linkGenerator) : ControllerBase
     {
         private readonly EmailAddressAttribute _emailAddressAttribute = new();
@@ -30,7 +30,7 @@ namespace Chezz.Controllers
 
         [HttpPost("/register", Name = "Register")]
         public async Task<Results<Ok, ValidationProblem>> Register(
-            [FromBody] Chezz.Identity.RegisterRequest registration, 
+            [FromBody] Chezz.Identity.RegisterRequest registration,
             [FromServices] IServiceProvider sp)
         {
             var userManager = sp.GetRequiredService<UserManager<ChezzUser>>();
@@ -100,7 +100,7 @@ namespace Chezz.Controllers
 
         [HttpPost("/refresh", Name = "Refresh")]
         public async Task<Results<Ok<AccessTokenResponse>, UnauthorizedHttpResult, SignInHttpResult, ChallengeHttpResult>> Refresh(
-            [FromBody] RefreshRequest refreshRequest, 
+            [FromBody] RefreshRequest refreshRequest,
             [FromServices] IServiceProvider sp)
         {
             var signInManager = sp.GetRequiredService<SignInManager<ChezzUser>>();
@@ -122,9 +122,9 @@ namespace Chezz.Controllers
 
         [HttpGet("/confirmEmail", Name = "ConfirmEmail")]
         public async Task<Results<ContentHttpResult, UnauthorizedHttpResult>> ConfirmEmail(
-            [FromQuery] string userId, 
-            [FromQuery] string code, 
-            [FromQuery] string? changedEmail, 
+            [FromQuery] string userId,
+            [FromQuery] string code,
+            [FromQuery] string? changedEmail,
             [FromServices] IServiceProvider sp)
         {
             var userManager = sp.GetRequiredService<UserManager<ChezzUser>>();
@@ -171,7 +171,8 @@ namespace Chezz.Controllers
 
         [HttpPost("/resendConfirmationEmail", Name = "ResendConfirmationEmail")]
         public async Task<Ok> ResendConfirmationEmail(
-            [FromBody] ResendConfirmationEmailRequest resendRequest, 
+            [FromBody] ResendConfirmationEmailRequest resendRequest,
+            HttpContext context,
             [FromServices] IServiceProvider sp)
         {
             var userManager = sp.GetRequiredService<UserManager<ChezzUser>>();
@@ -257,7 +258,7 @@ namespace Chezz.Controllers
         [HttpPost("/manage/info")]
         public async Task<Results<Ok<InfoResponse>, ValidationProblem, NotFound>> PostInfo(
             ClaimsPrincipal claimsPrincipal,
-            [FromBody] InfoRequest infoRequest, 
+            [FromBody] InfoRequest infoRequest,
             [FromServices] IServiceProvider sp)
         {
             var userManager = sp.GetRequiredService<UserManager<ChezzUser>>();
