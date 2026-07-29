@@ -116,7 +116,7 @@ const router = useRouter();
 async function signin() {
     loading.value = true;
     try {
-        await api.postApiidentityregister({ username: username.value, email: email.value, password: password.value });
+        await api.Identity_Register({ username: username.value, email: email.value, password: password.value });
         router.push("/signin");
     } catch(e) {
         console.error(e);

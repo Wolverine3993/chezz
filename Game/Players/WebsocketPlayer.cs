@@ -9,6 +9,8 @@ namespace Chezz.Game.Players
 		private WebSocket _webSocket;
 		private ChezzUser _user;
 		private CancellationToken _cancelToken = new();
+		private readonly TaskCompletionSource _closed = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
 
 		public WebsocketPlayer(WebSocket websocket, ChezzUser _user)
 		{
@@ -48,12 +50,31 @@ namespace Chezz.Game.Players
 				Console.WriteLine($"Recieved message from {Id}: {message}");
 			}
 
-			OnWebsocketDisconnect();
+			if (OnWebsocketDisconnect != null) OnWebsocketDisconnect();
 		}
 
 		public void SetupDisconnectHandler(Action onDisconnect)
 		{
 			OnWebsocketDisconnect += () => onDisconnect();
 		}
+
+		public async Task Close()
+		{
+			try
+			{
+				if (_webSocket.State == WebSocketState.Open)
+					await _webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, null, CancellationToken.None);
+			}
+			catch
+			{
+				// socket may already be gone; ignore
+			}
+			finally
+			{
+				_closed.TrySetResult();
+			}
+		}
+
+		public Task WaitForCloseAsync() => _closed.Task;
 	}
 }

@@ -37,9 +37,11 @@ public class Lobby
 	public bool AddPlayer(ChezzUser user, IPlayer player)
 	{
 		if (_players.Count == maxPlayers) return false;
+		_players.Remove(user.Id);
 		_players.Add(user.Id, player);
 		player.SetupDisconnectHandler(() => RemovePlayer(user));
 		Notify();
+		Console.WriteLine("New player connected, now at " + _players.Count);
 		return true;
 	}
 

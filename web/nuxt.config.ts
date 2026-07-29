@@ -11,7 +11,12 @@ export default defineNuxtConfig({
       // Reverse-proxy /api to the .NET backend in dev so the browser stays
       // same-origin (no CORS). Nitro's devProxy does NOT strip the /api prefix,
       // and the backend already serves everything under /api, so it lines up.
-      "/api": { target: "http://localhost:5281/api" },
+      "/api": {
+        target: "http://localhost:5281/api",
+        ws: true,
+        changeOrigin: true,
+        secure: false,
+      },
     },
   },
   vite: { plugins: [tailwindcss()] },

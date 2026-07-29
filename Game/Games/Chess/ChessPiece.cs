@@ -1,9 +1,12 @@
 using Chezz.Game.Func;
+using System.Text.Json.Serialization;
 
 namespace Chezz.Game.Games.Chess;
 
 public class ChessPiece : IPiece
 {
+	[JsonConverter(typeof(JsonStringEnumConverter))]
+
 	public enum ChessPieceEnum
 	{
 		Pawn,
@@ -33,8 +36,11 @@ public class ChessPiece : IPiece
 		this.Color = color;
 	}
 
-	public string ImageUrl()
+	public string ImageUrl
 	{
-		return $"/assets/chess/{Color.ToString()}/{Type.ToString().ToLower()}.svg";
+		get
+		{
+			return $"/assets/chess/{Color.ToString()}/{Type.ToString().ToLower()}.svg";
+		}
 	}
 }

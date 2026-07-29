@@ -2,7 +2,7 @@
 {
 	public class ChessGameState
 	{
-		public required ChessPiece?[,] Board { get; set; }
+		public required ChessPiece?[][] Board { get; set; }
 		public required bool YourTurn { get; set; }
 	}
 }

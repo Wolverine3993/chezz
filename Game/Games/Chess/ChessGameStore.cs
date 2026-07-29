@@ -5,7 +5,7 @@ namespace Chezz.Game.Games.Chess;
 
 public class ChessGameStore : IGameState<ChessPiece, ChessMove>
 {
-	private List<IPlayer> _players = new();
+	public Lobby Lobby { get; set; }
 	public ChessPiece?[,] Board { get; private set; }
 
 	private List<(IPlayer, ChessMove)> moveList = new();
@@ -39,7 +39,8 @@ public class ChessGameStore : IGameState<ChessPiece, ChessMove>
 					_ => throw new NotImplementedException(),
 				};
 
-				board[x, y] = new ChessPiece(type, this._players[player].Id, (ChessPiece.PieceColor)player);
+				board[x, y] = new ChessPiece(type, this.Lobby.Players[player].Id, (ChessPiece.PieceColor)player);
+				x += 1;
 			}
 
 			y += 1;
@@ -52,11 +53,6 @@ public class ChessGameStore : IGameState<ChessPiece, ChessMove>
 	public void Init()
 	{
 		Board = LoadFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
-	}
-
-	public void AddPlayer(IPlayer player)
-	{
-		_players.Add(player);
 	}
 
 	public bool AddMoveByPlayer(ChessMove move, IPlayer player)

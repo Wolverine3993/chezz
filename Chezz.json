@@ -120,6 +120,99 @@
         }
       }
     },
+    "/api/games/chess/game/{gameId}/moves": {
+      "get": {
+        "tags": [
+          "Chess"
+        ],
+        "operationId": "Chess_GetMoves",
+        "parameters": [
+          {
+            "name": "gameId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ChessMove"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ChessMove"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ChessMove"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/games/chess/game/{gameId}/move": {
+      "post": {
+        "tags": [
+          "Chess"
+        ],
+        "operationId": "Chess_MakeMove",
+        "parameters": [
+          {
+            "name": "gameId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChessMove"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChessMove"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChessMove"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/identity/register": {
       "post": {
         "tags": [
@@ -547,7 +640,15 @@
           "board": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/ChessPiece"
+              "type": "array",
+              "items": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ChessPiece"
+                  }
+                ],
+                "nullable": true
+              }
             },
             "nullable": true
           },
@@ -555,6 +656,10 @@
             "type": "boolean"
           }
         },
+        "additionalProperties": false
+      },
+      "ChessMove": {
+        "type": "object",
         "additionalProperties": false
       },
       "ChessPiece": {
@@ -569,21 +674,25 @@
           },
           "color": {
             "$ref": "#/components/schemas/PieceColor"
+          },
+          "imageUrl": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
           }
         },
         "additionalProperties": false
       },
       "ChessPieceEnum": {
         "enum": [
-          0,
-          1,
-          2,
-          3,
-          4,
-          5
+          "Pawn",
+          "Knight",
+          "Bishop",
+          "Rook",
+          "Queen",
+          "King"
         ],
-        "type": "integer",
-        "format": "int32"
+        "type": "string"
       },
       "ForgotPasswordRequest": {
         "required": [

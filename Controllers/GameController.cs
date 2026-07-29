@@ -69,7 +69,19 @@ public abstract class GameController<TMove, TPiece, TGameStatus, TGs, TGi> : Con
 	{
 		if (!HttpContext.WebSockets.IsWebSocketRequest) throw new BadRequestException("Websocket-only endpoint");
 
-		var (lobby, user) = await GetLobbyUser(lobbyId);
+		Lobby lobby;
+		ChezzUser user;
+		try
+		{
+			(lobby, user) = await GetLobbyUser(lobbyId);
+		}
+		catch (ChezzError ex) when (!HttpContext.Response.HasStarted)
+		{
+			// WebSocket handshakes can't be turned into ProblemDetails responses,
+			// so fail the handshake with the proper status code instead of crashing.
+			HttpContext.Response.StatusCode = ex.StatusCode;
+			return;
+		}
 
 		using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
 		WebsocketPlayer player = new WebsocketPlayer(webSocket, user);
@@ -79,6 +91,9 @@ public abstract class GameController<TMove, TPiece, TGameStatus, TGs, TGi> : Con
 		{
 			GameRegistry.Add(new(lobby, new TGs(), new TGi()));
 		}
+
+		// Wait until WebSocket closes
+		await player.WaitForCloseAsync();
 	}
 
 	[HttpGet("lobby/{lobbyId}/status", Name = "GetLobbyStatus")]
@@ -94,9 +109,31 @@ public abstract class GameController<TMove, TPiece, TGameStatus, TGs, TGi> : Con
 	{
 		var (game, user) = await GetGameUser(gameId);
 
-		var player = game.GameImplementation.Lobby.FromChezzUser(user);
+		var player = game.GameStore.Lobby.FromChezzUser(user);
 		if (player == null) throw new BadRequestException("Not in game, or cannot convert to IPlayer for some other reason");
 
 		return game.GetStatus(player);
+	}
+
+	[HttpGet("game/{gameId}/moves", Name = "GetMoves")]
+	public async Task<List<TMove>> GetMoves(Guid gameId)
+	{
+		var (game, user) = await GetGameUser(gameId);
+
+		var player = game.GameStore.Lobby.FromChezzUser(user);
+		if (player == null) throw new BadRequestException("Not in game, or cannot convert IPlayer");
+
+		return game.RequestMovesForPlayer(player);
+	}
+
+	[HttpPost("game/{gameId}/move", Name = "MakeMove")]
+	public async Task MakeMove(Guid gameId, [FromBody] TMove move)
+	{
+		var (game, user) = await GetGameUser(gameId);
+
+		var player = game.GameStore.Lobby.FromChezzUser(user);
+		if (player == null) throw new BadRequestException("Not in game, or cannot convert IPlayer");
+
+		await game.MakeMove(player, move);
 	}
 }

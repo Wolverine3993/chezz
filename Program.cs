@@ -53,6 +53,8 @@ namespace Chezz
 					var action = descriptor.AttributeRouteInfo?.Name ?? descriptor.ActionName;
 					return $"{descriptor.ControllerName}_{action}";
 				});
+
+				options.SchemaFilter<ChessGameStateSchemaFilter>();
 			});
 
 			// Game registries

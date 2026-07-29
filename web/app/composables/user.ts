@@ -7,7 +7,7 @@ export function useUser() {
   const { data, status, error, refresh } = useAsyncData<User | null>(
     "user",
     // 401/404 treated as "no user"
-    () => api.getApiidentitymanageinfo().catch(() => null),
+    () => api.Identity_GetInfo().catch(() => null),
     { default: () => null },
   );
 
@@ -15,7 +15,7 @@ export function useUser() {
   const isLoggedIn = computed(() => user.value !== null);
 
   async function login(body: z.infer<typeof schemas.LoginRequest>) {
-    await api.postApiidentitylogin(body, { queries: { useCookies: true } });
+    await api.Identity_Login(body, { queries: { useCookies: true } });
     await refresh();
   }
 

@@ -8,5 +8,7 @@ public interface IPlayer
 
 	public Task Notify();
 
+	public Task Close();
+
 	public void SetupDisconnectHandler(Action onDisconnect);
 }

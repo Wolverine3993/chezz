@@ -1,40 +1,19 @@
 import { makeApi, Zodios, type ZodiosOptions } from "@zodios/core";
 import { z } from "zod";
 
-type Claim = Partial<{
-  issuer: string | null;
-  originalIssuer: string | null;
-  properties: {};
-  subject: ClaimsIdentity;
-  type: string | null;
-  value: string | null;
-  valueType: string | null;
-}>;
-type ClaimsIdentity = Partial<{
-  authenticationType: string | null;
-  isAuthenticated: boolean;
-  actor: ClaimsIdentity;
-  bootstrapContext: unknown;
-  claims: Array<Claim> | null;
-  label: string | null;
-  name: string | null;
-  nameClaimType: string | null;
-  roleClaimType: string | null;
-}>;
-
 const LobbyInformation = z
   .object({
     playerUsernames: z.array(z.string()).nullable(),
     gameId: z.string().uuid().nullable(),
   })
   .partial();
-const ChessPieceEnum = z.union([
-  z.literal(0),
-  z.literal(1),
-  z.literal(2),
-  z.literal(3),
-  z.literal(4),
-  z.literal(5),
+const ChessPieceEnum = z.enum([
+  "Pawn",
+  "Knight",
+  "Bishop",
+  "Rook",
+  "Queen",
+  "King",
 ]);
 const PieceColor = z.union([z.literal(0), z.literal(1)]);
 const ChessPiece = z
@@ -42,12 +21,14 @@ const ChessPiece = z
     type: ChessPieceEnum,
     playerId: z.string().nullable(),
     color: PieceColor,
+    imageUrl: z.string().nullable(),
   })
   .partial();
 const ChessGameState = z.object({
-  board: z.array(ChessPiece).nullable(),
+  board: z.array(z.array(ChessPiece.nullable())).nullable(),
   yourTurn: z.boolean(),
 });
+const ChessMove = z.object({}).partial();
 const RegisterRequest = z.object({
   username: z.string().nullable(),
   email: z.string().nullable(),
@@ -73,34 +54,6 @@ const ResetPasswordRequest = z.object({
   resetCode: z.string().nullable(),
   newPassword: z.string().nullable(),
 });
-const ClaimsIdentity: z.ZodType<ClaimsIdentity> = z.lazy(() =>
-  z
-    .object({
-      authenticationType: z.string().nullable(),
-      isAuthenticated: z.boolean(),
-      actor: ClaimsIdentity,
-      bootstrapContext: z.unknown().nullable(),
-      claims: z.array(Claim).nullable(),
-      label: z.string().nullable(),
-      name: z.string().nullable(),
-      nameClaimType: z.string().nullable(),
-      roleClaimType: z.string().nullable(),
-    })
-    .partial()
-);
-const Claim: z.ZodType<Claim> = z.lazy(() =>
-  z
-    .object({
-      issuer: z.string().nullable(),
-      originalIssuer: z.string().nullable(),
-      properties: z.record(z.string()).nullable(),
-      subject: ClaimsIdentity,
-      type: z.string().nullable(),
-      value: z.string().nullable(),
-      valueType: z.string().nullable(),
-    })
-    .partial()
-);
 const InfoResponse = z.object({
   email: z.string().nullable(),
   isEmailConfirmed: z.boolean(),
@@ -119,6 +72,7 @@ export const schemas = {
   PieceColor,
   ChessPiece,
   ChessGameState,
+  ChessMove,
   RegisterRequest,
   LoginRequest,
   AccessTokenResponse,
@@ -126,13 +80,44 @@ export const schemas = {
   ResendConfirmationEmailRequest,
   ForgotPasswordRequest,
   ResetPasswordRequest,
-  ClaimsIdentity,
-  Claim,
   InfoResponse,
   InfoRequest,
 };
 
 const endpoints = makeApi([
+  {
+    method: "post",
+    path: "/api/games/chess/game/:gameId/move",
+    alias: "Chess_MakeMove",
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "body",
+        type: "Body",
+        schema: z.object({}).partial(),
+      },
+      {
+        name: "gameId",
+        type: "Path",
+        schema: z.string().uuid(),
+      },
+    ],
+    response: z.void(),
+  },
+  {
+    method: "get",
+    path: "/api/games/chess/game/:gameId/moves",
+    alias: "Chess_GetMoves",
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "gameId",
+        type: "Path",
+        schema: z.string().uuid(),
+      },
+    ],
+    response: z.array(ChessMove),
+  },
   {
     method: "get",
     path: "/api/games/chess/game/:gameId/status",
@@ -242,43 +227,11 @@ const endpoints = makeApi([
     path: "/api/identity/manage/info",
     alias: "Identity_GetInfo",
     requestFormat: "json",
-    parameters: [
-      {
-        name: "Claims",
-        type: "Query",
-        schema: z.array(Claim).optional(),
-      },
-      {
-        name: "Identities",
-        type: "Query",
-        schema: z.array(ClaimsIdentity).optional(),
-      },
-      {
-        name: "Identity.Name",
-        type: "Query",
-        schema: z.string().optional(),
-      },
-      {
-        name: "Identity.AuthenticationType",
-        type: "Query",
-        schema: z.string().optional(),
-      },
-      {
-        name: "Identity.IsAuthenticated",
-        type: "Query",
-        schema: z.boolean().optional(),
-      },
-    ],
     response: InfoResponse,
     errors: [
       {
         status: 400,
         description: `Bad Request`,
-        schema: z.void(),
-      },
-      {
-        status: 404,
-        description: `Not Found`,
         schema: z.void(),
       },
     ],
@@ -294,38 +247,13 @@ const endpoints = makeApi([
         type: "Body",
         schema: InfoRequest,
       },
-      {
-        name: "Claims",
-        type: "Query",
-        schema: z.array(Claim).optional(),
-      },
-      {
-        name: "Identities",
-        type: "Query",
-        schema: z.array(ClaimsIdentity).optional(),
-      },
-      {
-        name: "Identity.Name",
-        type: "Query",
-        schema: z.string().optional(),
-      },
-      {
-        name: "Identity.AuthenticationType",
-        type: "Query",
-        schema: z.string().optional(),
-      },
-      {
-        name: "Identity.IsAuthenticated",
-        type: "Query",
-        schema: z.boolean().optional(),
-      },
     ],
     response: InfoResponse,
     errors: [
       {
         status: 400,
         description: `Bad Request`,
-        schema: z.void(),
+        schema: z.record(z.array(z.string())),
       },
       {
         status: 404,
@@ -365,7 +293,7 @@ const endpoints = makeApi([
       {
         status: 400,
         description: `Bad Request`,
-        schema: z.void(),
+        schema: z.record(z.array(z.string())),
       },
     ],
   },
@@ -400,7 +328,7 @@ const endpoints = makeApi([
       {
         status: 400,
         description: `Bad Request`,
-        schema: z.void(),
+        schema: z.record(z.array(z.string())),
       },
     ],
   },

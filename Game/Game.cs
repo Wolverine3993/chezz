@@ -17,7 +17,7 @@ public class Game<TMove, TPiece, TGameStatus, TGameState, TGameImplementation> :
 
 	private async Task Notify()
 	{
-		await Task.WhenAll(GameImplementation.Lobby.Players.Select(v => v.Notify()));
+		await Task.WhenAll(GameStore.Lobby.Players.Select(v => v.Notify()));
 	}
 
 	public Game(Lobby lobby, TGameState gameStore, TGameImplementation gameImplementation)
@@ -26,8 +26,10 @@ public class Game<TMove, TPiece, TGameStatus, TGameState, TGameImplementation> :
 		GameStore = gameStore;
 		GameImplementation = gameImplementation;
 
-		GameImplementation.Lobby = lobby;
+		GameStore.Lobby = lobby;
 		lobby.GameId = Id;
+
+		GameStore.Init();
 
 		var _ = Notify();
 	}
@@ -39,13 +41,13 @@ public class Game<TMove, TPiece, TGameStatus, TGameState, TGameImplementation> :
 		{
 			return currentMoves;
 		}
-		currentMoves = GameImplementation.GetValidMoves(GameStore, GameImplementation.Lobby.Players[GameImplementation.CurrentTurn]);
+		currentMoves = GameImplementation.GetValidMoves(GameStore, GameStore.Lobby.Players[GameImplementation.CurrentTurn]);
 		return currentMoves;
 	}
 
 	public bool IsTurn(IPlayer player)
 	{
-		return GameImplementation.Lobby.Players[GameImplementation.CurrentTurn].Id == player.Id;
+		return GameStore.Lobby.Players[GameImplementation.CurrentTurn].Id == player.Id;
 	}
 
 	public async Task<bool> MakeMove(IPlayer player, TMove move)
