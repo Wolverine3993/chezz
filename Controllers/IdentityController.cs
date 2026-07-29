@@ -28,7 +28,7 @@ namespace Chezz.Controllers
         private readonly EmailAddressAttribute _emailAddressAttribute = new();
 
         [HttpPost("register", Name = "Register")]
-        public async Task<Results<Ok, ValidationProblem>> Register(
+        public async Task<Results<Ok, BadRequest<Dictionary<string, string[]>>>> Register(
             [FromBody] Chezz.Identity.RegisterRequest registration,
             [FromServices] IServiceProvider sp)
         {
@@ -210,7 +210,7 @@ namespace Chezz.Controllers
         }
 
         [HttpPost("resetPassword", Name = "ResetPassword")]
-        public async Task<Results<Ok, ValidationProblem>> ResetPassword(
+        public async Task<Results<Ok, BadRequest<Dictionary<string, string[]>>>> ResetPassword(
             [FromBody] ResetPasswordRequest resetRequest,
             [FromServices] IServiceProvider sp)
         {
@@ -259,7 +259,7 @@ namespace Chezz.Controllers
         }
 
         [HttpPost("manage/info")]
-        public async Task<Results<Ok<InfoResponse>, ValidationProblem, NotFound>> PostInfo(
+        public async Task<Results<Ok<InfoResponse>, BadRequest<Dictionary<string, string[]>>, NotFound>> PostInfo(
             [FromBody] InfoRequest infoRequest,
             [FromServices] IServiceProvider sp)
         {
@@ -337,12 +337,12 @@ namespace Chezz.Controllers
             return Regex.Match(username, usernameRegex).Success;
         }
 
-        private static ValidationProblem CreateValidationProblem(string errorCode, string errorDescription) =>
-        TypedResults.ValidationProblem(new Dictionary<string, string[]> {
+        private static BadRequest<Dictionary<string, string[]>> CreateValidationProblem(string errorCode, string errorDescription) =>
+        TypedResults.BadRequest(new Dictionary<string, string[]> {
         { errorCode, [errorDescription] }
         });
 
-        private static ValidationProblem CreateValidationProblem(IdentityResult result)
+        private static BadRequest<Dictionary<string, string[]>> CreateValidationProblem(IdentityResult result)
         {
             // We expect a single error code and description in the normal case.
             // This could be golfed with GroupBy and ToDictionary, but perf! :P
@@ -367,7 +367,7 @@ namespace Chezz.Controllers
                 errorDictionary[error.Code] = newDescriptions;
             }
 
-            return TypedResults.ValidationProblem(errorDictionary);
+            return TypedResults.BadRequest(errorDictionary);
         }
 
         private static async Task<InfoResponse> CreateInfoResponseAsync<TUser>(TUser user, UserManager<TUser> userManager)
