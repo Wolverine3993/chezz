@@ -33,10 +33,7 @@ namespace Chezz
 			builder.Services.AddSmtpConfiguration(builder.Configuration.GetRequiredSection("SmtpConfiguration"));
 			builder.Services.AddSingleton<IEmailSender, EmailSender>();
 
-			builder.Services.AddIdentityApiEndpoints<ChezzUser>(options =>
-			{
-				options.User.RequireUniqueEmail = true;
-			})
+			builder.Services.AddIdentityApiEndpoints<ChezzUser>()
 				.AddRoles<ChezzRole>()
 				.AddEntityFrameworkStores<ChezzDbContext>()
 				.AddDefaultTokenProviders();

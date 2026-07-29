@@ -49,6 +49,11 @@ namespace Chezz.Controllers
                 return CreateValidationProblem(IdentityResult.Failed(userManager.ErrorDescriber.InvalidEmail(email)));
             }
 
+            if (await emailStore.FindByEmailAsync(email.ToUpper(), CancellationToken.None) is not null)
+            {
+                return CreateValidationProblem(IdentityResult.Failed(userManager.ErrorDescriber.DuplicateEmail(email)));
+            }
+
             if (string.IsNullOrEmpty(username) || !IsValidUsername(username))
             {
                 return CreateValidationProblem(IdentityResult.Failed(userManager.ErrorDescriber.InvalidUserName(username)));
@@ -240,14 +245,14 @@ namespace Chezz.Controllers
         }
 
         [HttpGet("manage/info")]
-        public async Task<Results<Ok<InfoResponse>, ValidationProblem, NotFound>> GetInfo(
-            ClaimsPrincipal claimsPrincipal,
+        public async Task<Results<Ok<InfoResponse>, ValidationProblem, UnauthorizedHttpResult>> GetInfo(
             [FromServices] IServiceProvider sp)
         {
+            var claimsPrincipal = HttpContext.User;
             var userManager = sp.GetRequiredService<UserManager<ChezzUser>>();
             if (await userManager.GetUserAsync(claimsPrincipal) is not { } user)
             {
-                return TypedResults.NotFound();
+                return TypedResults.Unauthorized();
             }
 
             return TypedResults.Ok(await CreateInfoResponseAsync(user, userManager));
@@ -255,10 +260,10 @@ namespace Chezz.Controllers
 
         [HttpPost("manage/info")]
         public async Task<Results<Ok<InfoResponse>, ValidationProblem, NotFound>> PostInfo(
-            ClaimsPrincipal claimsPrincipal,
             [FromBody] InfoRequest infoRequest,
             [FromServices] IServiceProvider sp)
         {
+            var claimsPrincipal = HttpContext.User;
             var userManager = sp.GetRequiredService<UserManager<ChezzUser>>();
             if (await userManager.GetUserAsync(claimsPrincipal) is not { } user)
             {
