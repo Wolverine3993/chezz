@@ -7,31 +7,300 @@ public class ChessGameImplementation : IGameImplementation<ChessPiece, ChessMove
 {
 	public int CurrentTurn { get; set; }
 
+	private static readonly (int dx, int dy)[] RookDirections =
+	{
+		(1, 0), (-1, 0), (0, 1), (0, -1)
+	};
+
+	private static readonly (int dx, int dy)[] BishopDirections =
+	{
+		(1, 1), (1, -1), (-1, 1), (-1, -1)
+	};
+
+	private static readonly (int dx, int dy)[] KnightOffsets =
+	{
+		(1, 2), (2, 1), (2, -1), (1, -2), (-1, -2), (-2, -1), (-2, 1), (-1, 2)
+	};
+
+	private static readonly (int dx, int dy)[] KingOffsets =
+	{
+		(1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0), (-1, -1), (0, -1), (1, -1)
+	};
+
 	public List<ChessMove> GetValidMoves(ChessGameStore gameStore, IPlayer player)
 	{
 		List<ChessMove> moves = new();
 
-		for (int x = 0; x < gameStore.Board.GetLength(0); x++)
-		{
-			for (int y = 0; y < gameStore.Board.GetLength(1); y++)
-			{
-				ChessPiece? piece = gameStore.Board[x, y];
-				if (piece == null) continue;
+		ChessPiece?[,] board = gameStore.Board;
+		int width = board.GetLength(0);
+		int height = board.GetLength(1);
 
-				if (y + 1 == gameStore.Board.GetLength(1)) continue;
-				if (x + 1 == gameStore.Board.GetLength(0)) continue;
+		for (int x = 0; x < width; x++)
+		{
+			for (int y = 0; y < height; y++)
+			{
+				ChessPiece? piece = board[x, y];
+				if (piece == null) continue;
 
 				if (piece.PlayerId != player.Id) continue;
 
-				moves.Add(new ChessMove
+				switch (piece.Type)
 				{
-					from = (x, y),
-					to = (x + 1, y + 1)
-				});
+					case ChessPiece.ChessPieceEnum.Pawn:
+						AddPawnMoves(gameStore, board, moves, x, y, piece, width, height);
+						break;
+					case ChessPiece.ChessPieceEnum.Knight:
+						AddStepMoves(board, moves, x, y, piece, KnightOffsets, width, height);
+						break;
+					case ChessPiece.ChessPieceEnum.Bishop:
+						AddSlidingMoves(board, moves, x, y, piece, BishopDirections, width, height);
+						break;
+					case ChessPiece.ChessPieceEnum.Rook:
+						AddSlidingMoves(board, moves, x, y, piece, RookDirections, width, height);
+						break;
+					case ChessPiece.ChessPieceEnum.Queen:
+						AddSlidingMoves(board, moves, x, y, piece, RookDirections, width, height);
+						AddSlidingMoves(board, moves, x, y, piece, BishopDirections, width, height);
+						break;
+					case ChessPiece.ChessPieceEnum.King:
+						AddStepMoves(board, moves, x, y, piece, KingOffsets, width, height);
+						break;
+				}
 			}
 		}
 
+		// Discard moves that would leave (or place) the mover's own king in check.
+		// This naturally enforces pins and forces the player out of check.
+		moves.RemoveAll(move => WouldLeaveKingInCheck(board, move, player.Id, width, height));
+
 		return moves;
+	}
+
+	private static bool InBounds(int x, int y, int width, int height)
+		=> x >= 0 && x < width && y >= 0 && y < height;
+
+	private static ChessPiece?[,] CloneBoard(ChessPiece?[,] board)
+	{
+		ChessPiece?[,] copy = new ChessPiece?[board.GetLength(0), board.GetLength(1)];
+		Array.Copy(board, copy, board.Length);
+		return copy;
+	}
+
+	private static void ApplyMove(ChessPiece?[,] board, ChessMove move)
+	{
+		ChessPiece? from = board[move.From.X, move.From.Y];
+		if (from == null) return;
+
+		// Mirror the en passant capture so the simulated board is accurate.
+		if (from.Type == ChessPiece.ChessPieceEnum.Pawn
+			&& move.From.X != move.To.X
+			&& board[move.To.X, move.To.Y] == null)
+		{
+			board[move.To.X, move.From.Y] = null;
+		}
+
+		board[move.From.X, move.From.Y] = null;
+		board[move.To.X, move.To.Y] = from;
+	}
+
+	private static bool WouldLeaveKingInCheck(ChessPiece?[,] board, ChessMove move, string playerId,
+		int width, int height)
+	{
+		ChessPiece?[,] copy = CloneBoard(board);
+		ApplyMove(copy, move);
+
+		for (int x = 0; x < width; x++)
+		{
+			for (int y = 0; y < height; y++)
+			{
+				ChessPiece? piece = copy[x, y];
+				if (piece != null && piece.PlayerId == playerId && piece.Type == ChessPiece.ChessPieceEnum.King)
+				{
+					return IsSquareAttacked(copy, x, y, piece.Color, playerId, width, height);
+				}
+			}
+		}
+
+		// No king on the board (shouldn't happen in a normal game) - nothing to protect.
+		return false;
+	}
+
+	private static bool IsSquareAttacked(ChessPiece?[,] board, int tx, int ty,
+		ChessPiece.PieceColor defenderColor, string defenderPlayerId, int width, int height)
+	{
+		// Pawn attacks. The opponent advances opposite to the defender, so an
+		// attacking pawn sits one rank "in front of" the square (from its view).
+		int opponentDirection = defenderColor == ChessPiece.PieceColor.White ? 1 : -1;
+		int pawnRow = ty - opponentDirection;
+		foreach (int px in stackalloc[] { tx - 1, tx + 1 })
+		{
+			if (!InBounds(px, pawnRow, width, height)) continue;
+			ChessPiece? p = board[px, pawnRow];
+			if (IsEnemy(p, defenderPlayerId) && p!.Type == ChessPiece.ChessPieceEnum.Pawn) return true;
+		}
+
+		// Knight attacks.
+		foreach ((int dx, int dy) in KnightOffsets)
+		{
+			int nx = tx + dx;
+			int ny = ty + dy;
+			if (!InBounds(nx, ny, width, height)) continue;
+			ChessPiece? p = board[nx, ny];
+			if (IsEnemy(p, defenderPlayerId) && p!.Type == ChessPiece.ChessPieceEnum.Knight) return true;
+		}
+
+		// Adjacent enemy king.
+		foreach ((int dx, int dy) in KingOffsets)
+		{
+			int nx = tx + dx;
+			int ny = ty + dy;
+			if (!InBounds(nx, ny, width, height)) continue;
+			ChessPiece? p = board[nx, ny];
+			if (IsEnemy(p, defenderPlayerId) && p!.Type == ChessPiece.ChessPieceEnum.King) return true;
+		}
+
+		// Orthogonal sliders (rook / queen).
+		if (IsAttackedBySlider(board, tx, ty, defenderPlayerId, RookDirections,
+			ChessPiece.ChessPieceEnum.Rook, width, height)) return true;
+
+		// Diagonal sliders (bishop / queen).
+		if (IsAttackedBySlider(board, tx, ty, defenderPlayerId, BishopDirections,
+			ChessPiece.ChessPieceEnum.Bishop, width, height)) return true;
+
+		return false;
+	}
+
+	private static bool IsAttackedBySlider(ChessPiece?[,] board, int tx, int ty, string defenderPlayerId,
+		(int dx, int dy)[] directions, ChessPiece.ChessPieceEnum sliderType, int width, int height)
+	{
+		foreach ((int dx, int dy) in directions)
+		{
+			int nx = tx + dx;
+			int ny = ty + dy;
+			while (InBounds(nx, ny, width, height))
+			{
+				ChessPiece? p = board[nx, ny];
+				if (p != null)
+				{
+					if (IsEnemy(p, defenderPlayerId)
+						&& (p.Type == sliderType || p.Type == ChessPiece.ChessPieceEnum.Queen))
+					{
+						return true;
+					}
+					break;
+				}
+
+				nx += dx;
+				ny += dy;
+			}
+		}
+
+		return false;
+	}
+
+	private static bool IsEnemy(ChessPiece? piece, string defenderPlayerId)
+		=> piece != null && piece.PlayerId != defenderPlayerId;
+
+	private static ChessMove CreateMove(int fromX, int fromY, int toX, int toY)
+		=> new() { From = (fromX, fromY), To = (toX, toY) };
+
+	private static void AddSlidingMoves(ChessPiece?[,] board, List<ChessMove> moves, int x, int y,
+		ChessPiece piece, (int dx, int dy)[] directions, int width, int height)
+	{
+		foreach ((int dx, int dy) in directions)
+		{
+			int nx = x + dx;
+			int ny = y + dy;
+			while (InBounds(nx, ny, width, height))
+			{
+				ChessPiece? target = board[nx, ny];
+				if (target == null)
+				{
+					moves.Add(CreateMove(x, y, nx, ny));
+				}
+				else
+				{
+					if (target.PlayerId != piece.PlayerId) moves.Add(CreateMove(x, y, nx, ny));
+					break;
+				}
+
+				nx += dx;
+				ny += dy;
+			}
+		}
+	}
+
+	private static void AddStepMoves(ChessPiece?[,] board, List<ChessMove> moves, int x, int y,
+		ChessPiece piece, (int dx, int dy)[] offsets, int width, int height)
+	{
+		foreach ((int dx, int dy) in offsets)
+		{
+			int nx = x + dx;
+			int ny = y + dy;
+			if (!InBounds(nx, ny, width, height)) continue;
+
+			ChessPiece? target = board[nx, ny];
+			if (target == null || target.PlayerId != piece.PlayerId)
+			{
+				moves.Add(CreateMove(x, y, nx, ny));
+			}
+		}
+	}
+
+	private static void AddPawnMoves(ChessGameStore gameStore, ChessPiece?[,] board, List<ChessMove> moves,
+		int x, int y, ChessPiece piece, int width, int height)
+	{
+		// White sits at the bottom of the board (high y) and advances toward y = 0.
+		int direction = piece.Color == ChessPiece.PieceColor.White ? -1 : 1;
+		int startRow = piece.Color == ChessPiece.PieceColor.White ? height - 2 : 1;
+
+		int oneY = y + direction;
+		if (InBounds(x, oneY, width, height) && board[x, oneY] == null)
+		{
+			moves.Add(CreateMove(x, y, x, oneY));
+
+			int twoY = y + (2 * direction);
+			if (y == startRow && InBounds(x, twoY, width, height) && board[x, twoY] == null)
+			{
+				moves.Add(CreateMove(x, y, x, twoY));
+			}
+		}
+
+		foreach (int dx in stackalloc[] { -1, 1 })
+		{
+			int nx = x + dx;
+			int ny = y + direction;
+			if (!InBounds(nx, ny, width, height)) continue;
+
+			ChessPiece? target = board[nx, ny];
+			if (target != null)
+			{
+				if (target.PlayerId != piece.PlayerId) moves.Add(CreateMove(x, y, nx, ny));
+				continue;
+			}
+
+			if (IsEnPassant(gameStore, board, x, y, nx, direction, piece))
+			{
+				moves.Add(CreateMove(x, y, nx, ny));
+			}
+		}
+	}
+
+	private static bool IsEnPassant(ChessGameStore gameStore, ChessPiece?[,] board, int x, int y,
+		int captureX, int direction, ChessPiece piece)
+	{
+		ChessMove? last = gameStore.LastMove;
+		if (last == null) return false;
+
+		// The pawn to capture sits beside us, on our own rank.
+		ChessPiece? victim = board[captureX, y];
+		if (victim == null) return false;
+		if (victim.Type != ChessPiece.ChessPieceEnum.Pawn) return false;
+		if (victim.PlayerId == piece.PlayerId) return false;
+
+		// It must have just advanced two squares onto that square last turn.
+		return last.To.X == captureX && last.To.Y == y
+			&& last.From.X == captureX && last.From.Y == y + (2 * direction);
 	}
 
 	public void OnMakeMove(ChessGameStore gameStore, IPlayer player, ChessMove move)
@@ -53,10 +322,13 @@ public class ChessGameImplementation : IGameImplementation<ChessPiece, ChessMove
 			}
 		}
 
+		int playerIndex = gameStore.Lobby.Players.FindIndex(v => v.Id == player.Id);
+
 		return new()
 		{
 			Board = board,
-			YourTurn = CurrentTurn == gameStore.Lobby.Players.FindIndex(v => v.Id == player.Id),
+			YourTurn = CurrentTurn == playerIndex,
+			YourColor = playerIndex == 0 ? ChessPiece.PieceColor.White : ChessPiece.PieceColor.Black,
 		};
 	}
 

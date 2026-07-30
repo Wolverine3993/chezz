@@ -8,8 +8,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.EntityFrameworkCore;
-using Chezz.SMTP;
-using Chezz.Identity;
 
 namespace Chezz
 {
@@ -65,16 +63,19 @@ namespace Chezz
 			builder.Services.AddProblemDetails();
 			builder.Services.AddExceptionHandler<Errors.AppExceptionHandler>();
 
-			builder.Services.AddCors(options =>
+			if (builder.Environment.IsDevelopment())
 			{
-				options.AddDefaultPolicy(policy =>
+				builder.Services.AddCors(options =>
 				{
-					policy.WithOrigins("http://localhost:3000")
-					.AllowAnyOrigin()
-					.AllowAnyMethod()
-					.AllowAnyHeader();
+					options.AddDefaultPolicy(policy =>
+					{
+						policy.WithOrigins("http://localhost:3000")
+						.AllowAnyOrigin()
+						.AllowAnyMethod()
+						.AllowAnyHeader();
+					});
 				});
-			});
+			}
 
 			var app = builder.Build();
 

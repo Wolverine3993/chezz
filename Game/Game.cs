@@ -58,7 +58,7 @@ public class Game<TMove, TPiece, TGameStatus, TGameState, TGameImplementation> :
 			currentMoves = RequestMovesForPlayer(player);
 		}
 
-		if (!currentMoves.Contains(move)) return false;
+		if (!currentMoves.Any((v) => v.Equals(move))) return false;
 
 		bool result = GameStore.AddMoveByPlayer(move, player);
 		if (!result) return false;
@@ -67,6 +67,7 @@ public class Game<TMove, TPiece, TGameStatus, TGameState, TGameImplementation> :
 		GameImplementation.OnMakeMove(GameStore, player, move);
 		currentMoves = null;
 		await Notify();
+		Console.WriteLine("made move");
 		return true;
 	}
 

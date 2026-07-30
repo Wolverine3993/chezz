@@ -15,7 +15,7 @@ const ChessPieceEnum = z.enum([
   "Queen",
   "King",
 ]);
-const PieceColor = z.union([z.literal(0), z.literal(1)]);
+const PieceColor = z.enum(["White", "Black"]);
 const ChessPiece = z
   .object({
     type: ChessPieceEnum,
@@ -27,8 +27,14 @@ const ChessPiece = z
 const ChessGameState = z.object({
   board: z.array(z.array(ChessPiece.nullable())).nullable(),
   yourTurn: z.boolean(),
+  yourColor: PieceColor,
 });
-const ChessMove = z.object({}).partial();
+const ChessPosition = z
+  .object({ x: z.number().int(), y: z.number().int() })
+  .partial();
+const ChessMove = z
+  .object({ from: ChessPosition, to: ChessPosition })
+  .partial();
 const RegisterRequest = z.object({
   username: z.string().nullable(),
   email: z.string().nullable(),
@@ -72,6 +78,7 @@ export const schemas = {
   PieceColor,
   ChessPiece,
   ChessGameState,
+  ChessPosition,
   ChessMove,
   RegisterRequest,
   LoginRequest,
@@ -94,7 +101,7 @@ const endpoints = makeApi([
       {
         name: "body",
         type: "Body",
-        schema: z.object({}).partial(),
+        schema: ChessMove,
       },
       {
         name: "gameId",
@@ -102,7 +109,7 @@ const endpoints = makeApi([
         schema: z.string().uuid(),
       },
     ],
-    response: z.void(),
+    response: z.boolean(),
   },
   {
     method: "get",

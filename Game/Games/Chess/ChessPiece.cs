@@ -16,6 +16,8 @@ public class ChessPiece : IPiece
 		Queen,
 		King,
 	}
+
+	[JsonConverter(typeof(JsonStringEnumConverter))]
 	public enum PieceColor
 	{
 		White,
@@ -40,7 +42,7 @@ public class ChessPiece : IPiece
 	{
 		get
 		{
-			return $"/assets/chess/{Color.ToString()}/{Type.ToString().ToLower()}.svg";
+			return $"/assets/chess/{Color.ToString()}/{Type.ToString()}.svg".ToLower();
 		}
 	}
 }

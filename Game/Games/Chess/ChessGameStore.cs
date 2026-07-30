@@ -10,6 +10,8 @@ public class ChessGameStore : IGameState<ChessPiece, ChessMove>
 
 	private List<(IPlayer, ChessMove)> moveList = new();
 
+	public ChessMove? LastMove => moveList.Count > 0 ? moveList[^1].Item2 : null;
+
 	private ChessPiece?[,] LoadFen(string fen)
 	{
 		ChessPiece?[,] board = new ChessPiece?[8, 8];
@@ -57,11 +59,20 @@ public class ChessGameStore : IGameState<ChessPiece, ChessMove>
 
 	public bool AddMoveByPlayer(ChessMove move, IPlayer player)
 	{
-		ChessPiece? from = Board[move.from.Item1, move.from.Item2];
+		ChessPiece? from = Board[move.From.X, move.From.Y];
 		if (from == null) return false;
 
-		Board[move.from.Item1, move.from.Item2] = null;
-		Board[move.to.Item1, move.to.Item2] = from;
+		// En passant: a pawn moving diagonally onto an empty square captures the
+		// enemy pawn sitting on the moving pawn's origin rank.
+		if (from.Type == ChessPiece.ChessPieceEnum.Pawn
+			&& move.From.X != move.To.X
+			&& Board[move.To.X, move.To.Y] == null)
+		{
+			Board[move.To.X, move.From.Y] = null;
+		}
+
+		Board[move.From.X, move.From.Y] = null;
+		Board[move.To.X, move.To.Y] = from;
 
 		moveList.Add((player, move));
 

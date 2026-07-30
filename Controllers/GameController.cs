@@ -6,6 +6,7 @@ using Chezz.Game.Players;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 
 namespace Chezz.Controllers;
 
@@ -127,13 +128,15 @@ public abstract class GameController<TMove, TPiece, TGameStatus, TGs, TGi> : Con
 	}
 
 	[HttpPost("game/{gameId}/move", Name = "MakeMove")]
-	public async Task MakeMove(Guid gameId, [FromBody] TMove move)
+	public async Task<bool> MakeMove(Guid gameId, [FromBody] TMove move)
 	{
 		var (game, user) = await GetGameUser(gameId);
 
 		var player = game.GameStore.Lobby.FromChezzUser(user);
 		if (player == null) throw new BadRequestException("Not in game, or cannot convert IPlayer");
 
-		await game.MakeMove(player, move);
+		Console.WriteLine(JsonSerializer.Serialize(move));
+
+		return await game.MakeMove(player, move);
 	}
 }

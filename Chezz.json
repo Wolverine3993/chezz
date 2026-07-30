@@ -208,7 +208,24 @@
         },
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
           }
         }
       }
@@ -633,6 +650,7 @@
       "ChessGameState": {
         "required": [
           "board",
+          "yourColor",
           "yourTurn"
         ],
         "type": "object",
@@ -654,12 +672,23 @@
           },
           "yourTurn": {
             "type": "boolean"
+          },
+          "yourColor": {
+            "$ref": "#/components/schemas/PieceColor"
           }
         },
         "additionalProperties": false
       },
       "ChessMove": {
         "type": "object",
+        "properties": {
+          "from": {
+            "$ref": "#/components/schemas/ChessPosition"
+          },
+          "to": {
+            "$ref": "#/components/schemas/ChessPosition"
+          }
+        },
         "additionalProperties": false
       },
       "ChessPiece": {
@@ -693,6 +722,20 @@
           "King"
         ],
         "type": "string"
+      },
+      "ChessPosition": {
+        "type": "object",
+        "properties": {
+          "x": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "y": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
       },
       "ForgotPasswordRequest": {
         "required": [
@@ -817,11 +860,10 @@
       },
       "PieceColor": {
         "enum": [
-          0,
-          1
+          "White",
+          "Black"
         ],
-        "type": "integer",
-        "format": "int32"
+        "type": "string"
       },
       "RefreshRequest": {
         "required": [

@@ -19,7 +19,6 @@ export class WebsocketController {
     };
 
     ws.onmessage = (message) => {
-        console.log(message);
       const msgString: string = message.data;
       this.recieve.push(msgString);
       for (let i = 0; i < this.listeners.length; i++) {
