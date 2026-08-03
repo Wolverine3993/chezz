@@ -1,6 +1,12 @@
 import { makeApi, Zodios, type ZodiosOptions } from "@zodios/core";
 import { z } from "zod";
 
+const credentialOptions: ZodiosOptions = {
+  axiosConfig: {
+    withCredentials: true
+  }
+};
+
 const LobbyInformation = z
   .object({
     playerUsernames: z.array(z.string()).nullable(),
@@ -341,8 +347,8 @@ const endpoints = makeApi([
   },
 ]);
 
-export const api = new Zodios(endpoints);
+export const api = new Zodios(endpoints, credentialOptions);
 
 export function createApiClient(baseUrl: string, options?: ZodiosOptions) {
-  return new Zodios(baseUrl, endpoints, options);
+  return new Zodios(baseUrl, endpoints, options ? options : credentialOptions);
 }
