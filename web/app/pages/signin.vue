@@ -17,7 +17,7 @@
                     <div>
                         <form @submit.prevent="signin" class="space-y-6">
                             <div>
-                                <label for="username" class="block text-sm/6 font-medium text-zinc-100">Username</label>
+                                <label for="username" class="block text-sm/6 font-medium text-zinc-100">Username or Email</label>
                                 <div class="mt-2">
                                     <input v-model="username" type="text" name="username" id="username" autocomplete="username" required
                                         class="block w-full rounded-md bg-white/5 px-3 py-1.5 text-base text-white outline-1 -outline-offset-1 outline-white/10 placeholder:text-zinc-500 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-500 sm:text-sm/6" />

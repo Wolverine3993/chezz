@@ -20,6 +20,7 @@ namespace Chezz.Controllers
 {
     [Route("/api/identity")]
     public class IdentityController(
+        UserManager<ChezzUser> userManager,
         TimeProvider timeProvider,
         IOptionsMonitor<BearerTokenOptions> bearerTokenOptions,
         IEmailSender emailSender,
@@ -91,7 +92,13 @@ namespace Chezz.Controllers
             var isPersistent = (useCookies == true) && (useSessionCookies != true);
             signInManager.AuthenticationScheme = useCookieScheme ? IdentityConstants.ApplicationScheme : IdentityConstants.BearerScheme;
 
-            var result = await signInManager.PasswordSignInAsync(login.Username, login.Password, isPersistent, lockoutOnFailure: true);
+            var user = await userManager.FindByNameAsync(login.Username) ?? await userManager.FindByEmailAsync(login.Username);
+            if (user is null)
+            {
+                return TypedResults.Problem($"User by username or email {login.Username} does not exist", statusCode: StatusCodes.Status401Unauthorized);
+            }
+
+            var result = await signInManager.PasswordSignInAsync(user, login.Password, isPersistent, lockoutOnFailure: true);
 
             if (!result.Succeeded)
             {
