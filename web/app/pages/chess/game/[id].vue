@@ -9,7 +9,7 @@
                     :class="['relative w-16 h-16 flex items-center justify-center',
                         (colIdx * 7 + rowIdx + (viewColour === 'White' ? 0 : 1)) % 2 == 0 ? 'bg-olive-300' : 'bg-olive-700',
                         selectedView && selectedView.colIdx === colIdx && selectedView.rowIdx === rowIdx ? 'bg-olive-900/30' : '']" @click="selectPiece(colIdx, rowIdx)">
-                    <img v-if="square" :src="square.imageUrl!" class="w-16 h-16" />
+                    <img v-if="square" :src="square.imageUrl" class="w-16 h-16" />
                     <div v-if="moveIdAt(colIdx, rowIdx)" @click="(e) => makeMove(e, moveIdAt(colIdx, rowIdx))"
                         class="absolute inset-0 flex items-center justify-center z-50">
                         <div class="size-2 bg-olive-700 ring-2 ring-olive-300 rounded-full" />
@@ -47,12 +47,13 @@ const currentMoves = ref<Array<ChessMove>>([]);
 const currentSelectedPiece = ref<ChessMove["from"] | null>(null);
 
 const highlightMoves = computed<Array<{ colIdx: number, rowIdx: number, moveId: string }> | null>(() => {
-    if (currentSelectedPiece.value === null) return null;
+    const selected = currentSelectedPiece.value;
+    if (selected === null) return null;
     return currentMoves.value
-        .filter((v) => v.from?.x === currentSelectedPiece.value?.x && v.from?.y === currentSelectedPiece.value?.y)
+        .filter((v) => v.from.x === selected.x && v.from.y === selected.y)
         .map((v) => {
-            const [colIdx, rowIdx] = boardToView(v.to!.x!, v.to!.y!);
-            return { colIdx, rowIdx, moveId: v.moveId! };
+            const [colIdx, rowIdx] = boardToView(v.to.x, v.to.y);
+            return { colIdx, rowIdx, moveId: v.moveId };
         });
 })
 
@@ -61,8 +62,9 @@ function moveIdAt(colIdx: number, rowIdx: number): string | null {
 }
 
 const selectedView = computed<{ colIdx: number, rowIdx: number } | null>(() => {
-    if (currentSelectedPiece.value === null) return null;
-    const [colIdx, rowIdx] = boardToView(currentSelectedPiece.value!.x!, currentSelectedPiece.value!.y!);
+    const selected = currentSelectedPiece.value;
+    if (selected === null) return null;
+    const [colIdx, rowIdx] = boardToView(selected.x, selected.y);
     return { colIdx, rowIdx };
 })
 

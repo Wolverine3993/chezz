@@ -1,4 +1,5 @@
-﻿using Chezz.Game.Func;
+﻿using System.Text.Json.Serialization;
+using Chezz.Game.Func;
 
 namespace Chezz.Game.Games.Chess
 {
@@ -8,10 +9,20 @@ namespace Chezz.Game.Games.Chess
 		public static implicit operator (int, int)(ChessPosition position) => (position.X, position.Y);
 	}
 
+	[JsonConverter(typeof(JsonStringEnumConverter))]
+	public enum ChessMoveKind
+	{
+		Normal,
+		EnPassant,
+		Castle,
+	}
+
 	public abstract class ChessMove : IMove
 	{
 		public ChessPosition From { get; set; }
 		public ChessPosition To { get; set; }
+
+		public abstract ChessMoveKind Kind { get; }
 
 		public virtual string MoveId => throw new NotImplementedException();
 
@@ -20,6 +31,8 @@ namespace Chezz.Game.Games.Chess
 
 	public class NormalChessMove : ChessMove
 	{
+		public override ChessMoveKind Kind => ChessMoveKind.Normal;
+
 		public override string MoveId => $"normal-{From.X}/{From.Y}-{To.X}/{To.Y}";
 
 		public override bool MutateBoard(ChessPiece?[,] board)
@@ -36,6 +49,8 @@ namespace Chezz.Game.Games.Chess
 
 	public class EnPassantChessMove : ChessMove
 	{
+		public override ChessMoveKind Kind => ChessMoveKind.EnPassant;
+
 		public override string MoveId => $"enpassant-{From.X}/{From.Y}-{To.X}/{To.Y}";
 
 		public override bool MutateBoard(ChessPiece?[,] board)
@@ -55,6 +70,8 @@ namespace Chezz.Game.Games.Chess
 
 	public class CastlingChessMove : ChessMove
 	{
+		public override ChessMoveKind Kind => ChessMoveKind.Castle;
+
 		public override string MoveId => $"castle-{From.X}/{From.Y}-{To.X}/{To.Y}";
 
 		public override bool MutateBoard(ChessPiece?[,] board)

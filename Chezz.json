@@ -623,26 +623,24 @@
         "required": [
           "accessToken",
           "expiresIn",
-          "refreshToken"
+          "refreshToken",
+          "tokenType"
         ],
         "type": "object",
         "properties": {
           "tokenType": {
             "type": "string",
-            "nullable": true,
             "readOnly": true
           },
           "accessToken": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "expiresIn": {
             "type": "integer",
             "format": "int64"
           },
           "refreshToken": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           }
         },
         "additionalProperties": false
@@ -667,8 +665,7 @@
                 ],
                 "nullable": true
               }
-            },
-            "nullable": true
+            }
           },
           "yourTurn": {
             "type": "boolean"
@@ -680,6 +677,12 @@
         "additionalProperties": false
       },
       "ChessMove": {
+        "required": [
+          "from",
+          "kind",
+          "moveId",
+          "to"
+        ],
         "type": "object",
         "properties": {
           "from": {
@@ -688,40 +691,56 @@
           "to": {
             "$ref": "#/components/schemas/ChessPosition"
           },
+          "kind": {
+            "$ref": "#/components/schemas/ChessMoveKind"
+          },
           "moveId": {
             "type": "string",
-            "nullable": true,
             "readOnly": true
           }
         },
         "additionalProperties": false
       },
       "ChessMoveChessPieceChessGameStateChessGameStoreChessGameImplementationMoveRequest": {
+        "required": [
+          "moveId"
+        ],
         "type": "object",
         "properties": {
           "moveId": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           }
         },
         "additionalProperties": false
       },
+      "ChessMoveKind": {
+        "enum": [
+          "Normal",
+          "EnPassant",
+          "Castle"
+        ],
+        "type": "string"
+      },
       "ChessPiece": {
+        "required": [
+          "color",
+          "imageUrl",
+          "playerId",
+          "type"
+        ],
         "type": "object",
         "properties": {
           "type": {
             "$ref": "#/components/schemas/ChessPieceEnum"
           },
           "playerId": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "color": {
             "$ref": "#/components/schemas/PieceColor"
           },
           "imageUrl": {
             "type": "string",
-            "nullable": true,
             "readOnly": true
           }
         },
@@ -739,6 +758,10 @@
         "type": "string"
       },
       "ChessPosition": {
+        "required": [
+          "x",
+          "y"
+        ],
         "type": "object",
         "properties": {
           "x": {
@@ -759,13 +782,15 @@
         "type": "object",
         "properties": {
           "email": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           }
         },
         "additionalProperties": false
       },
       "HttpValidationProblemDetails": {
+        "required": [
+          "errors"
+        ],
         "type": "object",
         "properties": {
           "type": {
@@ -796,8 +821,7 @@
               "items": {
                 "type": "string"
               }
-            },
-            "nullable": true
+            }
           }
         },
         "additionalProperties": { }
@@ -828,8 +852,7 @@
         "type": "object",
         "properties": {
           "email": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "isEmailConfirmed": {
             "type": "boolean"
@@ -838,14 +861,16 @@
         "additionalProperties": false
       },
       "LobbyInformation": {
+        "required": [
+          "playerUsernames"
+        ],
         "type": "object",
         "properties": {
           "playerUsernames": {
             "type": "array",
             "items": {
               "type": "string"
-            },
-            "nullable": true
+            }
           },
           "gameId": {
             "type": "string",
@@ -863,12 +888,10 @@
         "type": "object",
         "properties": {
           "username": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "password": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           }
         },
         "additionalProperties": false
@@ -887,8 +910,7 @@
         "type": "object",
         "properties": {
           "refreshToken": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           }
         },
         "additionalProperties": false
@@ -902,16 +924,13 @@
         "type": "object",
         "properties": {
           "username": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "email": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "password": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           }
         },
         "additionalProperties": false
@@ -923,8 +942,7 @@
         "type": "object",
         "properties": {
           "email": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           }
         },
         "additionalProperties": false
@@ -938,16 +956,13 @@
         "type": "object",
         "properties": {
           "email": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "resetCode": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "newPassword": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           }
         },
         "additionalProperties": false

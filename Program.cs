@@ -52,6 +52,9 @@ namespace Chezz
 					return $"{descriptor.ControllerName}_{action}";
 				});
 
+				options.SupportNonNullableReferenceTypes();
+				options.SchemaFilter<Chezz.OpenApi.RequireNonNullablePropertiesSchemaFilter>();
+
 				options.SchemaFilter<ChessGameStateSchemaFilter>();
 			});
 

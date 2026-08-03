@@ -1,12 +1,10 @@
 import { makeApi, Zodios, type ZodiosOptions } from "@zodios/core";
 import { z } from "zod";
 
-const LobbyInformation = z
-  .object({
-    playerUsernames: z.array(z.string()).nullable(),
-    gameId: z.string().uuid().nullable(),
-  })
-  .partial();
+const LobbyInformation = z.object({
+  playerUsernames: z.array(z.string()),
+  gameId: z.string().uuid().nullish(),
+});
 const ChessPieceEnum = z.enum([
   "Pawn",
   "Knight",
@@ -16,58 +14,49 @@ const ChessPieceEnum = z.enum([
   "King",
 ]);
 const PieceColor = z.enum(["White", "Black"]);
-const ChessPiece = z
-  .object({
-    type: ChessPieceEnum,
-    playerId: z.string().nullable(),
-    color: PieceColor,
-    imageUrl: z.string().nullable(),
-  })
-  .partial();
+const ChessPiece = z.object({
+  type: ChessPieceEnum,
+  playerId: z.string(),
+  color: PieceColor,
+  imageUrl: z.string(),
+});
 const ChessGameState = z.object({
-  board: z.array(z.array(ChessPiece.nullable())).nullable(),
+  board: z.array(z.array(ChessPiece.nullable())),
   yourTurn: z.boolean(),
   yourColor: PieceColor,
 });
-const ChessPosition = z
-  .object({ x: z.number().int(), y: z.number().int() })
-  .partial();
-const ChessMove = z
-  .object({
-    from: ChessPosition,
-    to: ChessPosition,
-    moveId: z.string().nullable(),
-  })
-  .partial();
+const ChessPosition = z.object({ x: z.number().int(), y: z.number().int() });
+const ChessMoveKind = z.enum(["Normal", "EnPassant", "Castle"]);
+const ChessMove = z.object({
+  from: ChessPosition,
+  to: ChessPosition,
+  kind: ChessMoveKind,
+  moveId: z.string(),
+});
 const ChessMoveChessPieceChessGameStateChessGameStoreChessGameImplementationMoveRequest =
-  z.object({ moveId: z.string().nullable() }).partial();
+  z.object({ moveId: z.string() });
 const RegisterRequest = z.object({
-  username: z.string().nullable(),
-  email: z.string().nullable(),
-  password: z.string().nullable(),
+  username: z.string(),
+  email: z.string(),
+  password: z.string(),
 });
-const LoginRequest = z.object({
-  username: z.string().nullable(),
-  password: z.string().nullable(),
-});
+const LoginRequest = z.object({ username: z.string(), password: z.string() });
 const AccessTokenResponse = z.object({
-  tokenType: z.string().nullish(),
-  accessToken: z.string().nullable(),
+  tokenType: z.string(),
+  accessToken: z.string(),
   expiresIn: z.number().int(),
-  refreshToken: z.string().nullable(),
+  refreshToken: z.string(),
 });
-const RefreshRequest = z.object({ refreshToken: z.string().nullable() });
-const ResendConfirmationEmailRequest = z.object({
-  email: z.string().nullable(),
-});
-const ForgotPasswordRequest = z.object({ email: z.string().nullable() });
+const RefreshRequest = z.object({ refreshToken: z.string() });
+const ResendConfirmationEmailRequest = z.object({ email: z.string() });
+const ForgotPasswordRequest = z.object({ email: z.string() });
 const ResetPasswordRequest = z.object({
-  email: z.string().nullable(),
-  resetCode: z.string().nullable(),
-  newPassword: z.string().nullable(),
+  email: z.string(),
+  resetCode: z.string(),
+  newPassword: z.string(),
 });
 const InfoResponse = z.object({
-  email: z.string().nullable(),
+  email: z.string(),
   isEmailConfirmed: z.boolean(),
 });
 const InfoRequest = z
@@ -85,6 +74,7 @@ export const schemas = {
   ChessPiece,
   ChessGameState,
   ChessPosition,
+  ChessMoveKind,
   ChessMove,
   ChessMoveChessPieceChessGameStateChessGameStoreChessGameImplementationMoveRequest,
   RegisterRequest,
@@ -108,7 +98,7 @@ const endpoints = makeApi([
       {
         name: "body",
         type: "Body",
-        schema: z.object({ moveId: z.string().nullable() }).partial(),
+        schema: z.object({ moveId: z.string() }),
       },
       {
         name: "gameId",
@@ -200,7 +190,7 @@ const endpoints = makeApi([
       {
         name: "body",
         type: "Body",
-        schema: z.object({ email: z.string().nullable() }),
+        schema: z.object({ email: z.string() }),
       },
     ],
     response: z.void(),
@@ -285,7 +275,7 @@ const endpoints = makeApi([
       {
         name: "body",
         type: "Body",
-        schema: z.object({ refreshToken: z.string().nullable() }),
+        schema: z.object({ refreshToken: z.string() }),
       },
     ],
     response: AccessTokenResponse,
@@ -320,7 +310,7 @@ const endpoints = makeApi([
       {
         name: "body",
         type: "Body",
-        schema: z.object({ email: z.string().nullable() }),
+        schema: z.object({ email: z.string() }),
       },
     ],
     response: z.void(),
