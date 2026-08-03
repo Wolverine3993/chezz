@@ -12,6 +12,16 @@ public class ChessGameStore : IGameState<ChessPiece, ChessMove>
 
 	public ChessMove? LastMove => moveList.Count > 0 ? moveList[^1].Item2 : null;
 
+	public bool HasMovedFrom(ChessPosition position)
+	{
+		foreach ((IPlayer _, ChessMove move) in moveList)
+		{
+			if (move.From == position) return true;
+		}
+
+		return false;
+	}
+
 	private ChessPiece?[,] LoadFen(string fen)
 	{
 		ChessPiece?[,] board = new ChessPiece?[8, 8];
@@ -27,7 +37,7 @@ public class ChessGameStore : IGameState<ChessPiece, ChessMove>
 					x += skip;
 					continue;
 				}
-				int player = piece.ToUpper() == piece ? 0 : 1; // White if uppercase, otherwise lowercase
+				int player = piece.ToUpper() == piece ? 0 : 1; // White if uppercase
 
 				string pieceLowercase = piece.ToLower();
 				ChessPiece.ChessPieceEnum type = pieceLowercase switch
@@ -59,20 +69,8 @@ public class ChessGameStore : IGameState<ChessPiece, ChessMove>
 
 	public bool AddMoveByPlayer(ChessMove move, IPlayer player)
 	{
-		ChessPiece? from = Board[move.From.X, move.From.Y];
-		if (from == null) return false;
-
-		// En passant: a pawn moving diagonally onto an empty square captures the
-		// enemy pawn sitting on the moving pawn's origin rank.
-		if (from.Type == ChessPiece.ChessPieceEnum.Pawn
-			&& move.From.X != move.To.X
-			&& Board[move.To.X, move.To.Y] == null)
-		{
-			Board[move.To.X, move.From.Y] = null;
-		}
-
-		Board[move.From.X, move.From.Y] = null;
-		Board[move.To.X, move.To.Y] = from;
+		bool result = move.MutateBoard(this.Board);
+		if (!result) return false;
 
 		moveList.Add((player, move));
 

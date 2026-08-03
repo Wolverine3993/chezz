@@ -50,7 +50,7 @@ public class Game<TMove, TPiece, TGameStatus, TGameState, TGameImplementation> :
 		return GameStore.Lobby.Players[GameImplementation.CurrentTurn].Id == player.Id;
 	}
 
-	public async Task<bool> MakeMove(IPlayer player, TMove move)
+	public async Task<bool> MakeMove(IPlayer player, string moveId)
 	{
 		if (!IsTurn(player)) return false;
 		if (currentMoves == null)
@@ -58,7 +58,9 @@ public class Game<TMove, TPiece, TGameStatus, TGameState, TGameImplementation> :
 			currentMoves = RequestMovesForPlayer(player);
 		}
 
-		if (!currentMoves.Any((v) => v.Equals(move))) return false;
+		TMove? move = currentMoves.Find((v) => v.MoveId == moveId);
+
+		if (move == null) return false;
 
 		bool result = GameStore.AddMoveByPlayer(move, player);
 		if (!result) return false;

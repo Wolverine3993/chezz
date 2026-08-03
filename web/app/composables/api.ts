@@ -33,8 +33,14 @@ const ChessPosition = z
   .object({ x: z.number().int(), y: z.number().int() })
   .partial();
 const ChessMove = z
-  .object({ from: ChessPosition, to: ChessPosition })
+  .object({
+    from: ChessPosition,
+    to: ChessPosition,
+    moveId: z.string().nullable(),
+  })
   .partial();
+const ChessMoveChessPieceChessGameStateChessGameStoreChessGameImplementationMoveRequest =
+  z.object({ moveId: z.string().nullable() }).partial();
 const RegisterRequest = z.object({
   username: z.string().nullable(),
   email: z.string().nullable(),
@@ -80,6 +86,7 @@ export const schemas = {
   ChessGameState,
   ChessPosition,
   ChessMove,
+  ChessMoveChessPieceChessGameStateChessGameStoreChessGameImplementationMoveRequest,
   RegisterRequest,
   LoginRequest,
   AccessTokenResponse,
@@ -101,7 +108,7 @@ const endpoints = makeApi([
       {
         name: "body",
         type: "Body",
-        schema: ChessMove,
+        schema: z.object({ moveId: z.string().nullable() }).partial(),
       },
       {
         name: "gameId",

@@ -10,9 +10,10 @@
                         (colIdx * 7 + rowIdx + (viewColour === 'White' ? 0 : 1)) % 2 == 0 ? 'bg-olive-300' : 'bg-olive-700',
                         selectedView && selectedView.colIdx === colIdx && selectedView.rowIdx === rowIdx ? 'bg-olive-900/30' : '']" @click="selectPiece(colIdx, rowIdx)">
                     <img v-if="square" :src="square.imageUrl!" class="w-16 h-16" />
-                    <div v-if="highlightMoves && highlightMoves.some((v) => v.colIdx === colIdx && v.rowIdx === rowIdx)"
-                        @click="(e) => makeMove(e, viewToBoard(colIdx, rowIdx))"
-                        class="absolute inset-0 flex items-center justify-center z-50"><div class="size-2 bg-olive-700 ring-2 ring-olive-300 rounded-full" /></div>
+                    <div v-if="moveIdAt(colIdx, rowIdx)" @click="(e) => makeMove(e, moveIdAt(colIdx, rowIdx))"
+                        class="absolute inset-0 flex items-center justify-center z-50">
+                        <div class="size-2 bg-olive-700 ring-2 ring-olive-300 rounded-full" />
+                    </div>
                 </div>
             </div>
         </div>
@@ -45,16 +46,19 @@ const viewColour = ref<ViewColour>("White");
 const currentMoves = ref<Array<ChessMove>>([]);
 const currentSelectedPiece = ref<ChessMove["from"] | null>(null);
 
-const highlightMoves = computed<Array<{ colIdx: number, rowIdx: number }> | null>(() => {
+const highlightMoves = computed<Array<{ colIdx: number, rowIdx: number, moveId: string }> | null>(() => {
     if (currentSelectedPiece.value === null) return null;
     return currentMoves.value
         .filter((v) => v.from?.x === currentSelectedPiece.value?.x && v.from?.y === currentSelectedPiece.value?.y)
-        .map((v) => v.to!)
         .map((v) => {
-            const [colIdx, rowIdx] = boardToView(v.x!, v.y!);
-            return { colIdx, rowIdx };
+            const [colIdx, rowIdx] = boardToView(v.to!.x!, v.to!.y!);
+            return { colIdx, rowIdx, moveId: v.moveId! };
         });
 })
+
+function moveIdAt(colIdx: number, rowIdx: number): string | null {
+    return highlightMoves.value?.find((v) => v.colIdx === colIdx && v.rowIdx === rowIdx)?.moveId ?? null;
+}
 
 const selectedView = computed<{ colIdx: number, rowIdx: number } | null>(() => {
     if (currentSelectedPiece.value === null) return null;
@@ -62,12 +66,6 @@ const selectedView = computed<{ colIdx: number, rowIdx: number } | null>(() => {
     return { colIdx, rowIdx };
 })
 
-// Nitro's devProxy can't forward WebSocket upgrades (ws:true is only honoured
-// for HTTP), so connect straight to the backend. localhost:5281 is same-site
-// with the dev server, so the SameSite=Lax auth cookie is still sent.
-// TODO: once the devProxy ws fix ships, switch back to a same-origin /api URL.
-//   Issue: https://github.com/nitrojs/nitro/issues/4269
-//   Fix PR: https://github.com/nitrojs/nitro/pull/4480
 const websocket = createWebsocket(
     `ws://localhost:5281/api/games/chess/lobby/${id}/ws`,
 );
@@ -110,10 +108,11 @@ function selectPiece(colIdx: number, rowIdx: number) {
     }
 }
 
-async function makeMove(e: Event, to: [number, number]) {
+async function makeMove(e: Event, moveId: string | null) {
     e.preventDefault();
+    if (moveId === null) return;
     if (currentState.value.status !== "game") return;
     if (currentSelectedPiece.value === null) return;
-    await api.Chess_MakeMove({ from: currentSelectedPiece.value, to: { x: to[0], y: to[1] }, }, { params: { gameId: currentState.value.gameId } });
+    await api.Chess_MakeMove({ moveId }, { params: { gameId: currentState.value.gameId } });
 }
 </script>
