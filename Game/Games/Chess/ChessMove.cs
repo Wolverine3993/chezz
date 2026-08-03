@@ -1,5 +1,5 @@
-﻿using System.Text.Json.Serialization;
-using Chezz.Game.Func;
+﻿using Chezz.Game.Func;
+using System.Text.Json.Serialization;
 
 namespace Chezz.Game.Games.Chess
 {
@@ -9,30 +9,26 @@ namespace Chezz.Game.Games.Chess
 		public static implicit operator (int, int)(ChessPosition position) => (position.X, position.Y);
 	}
 
-	[JsonConverter(typeof(JsonStringEnumConverter))]
-	public enum ChessMoveKind
-	{
-		Normal,
-		EnPassant,
-		Castle,
-	}
-
+	// Polymorphic serialization: each subtype is emitted as its own schema under a
+	// oneOf, tagged by the "kind" discriminator. This lets subtype-only data (e.g.
+	// PromotionChessMove.PromotionPiece) appear only on the variant that has it.
+	[JsonPolymorphic(TypeDiscriminatorPropertyName = "kind")]
+	[JsonDerivedType(typeof(NormalChessMove), "Normal")]
+	[JsonDerivedType(typeof(EnPassantChessMove), "EnPassant")]
+	[JsonDerivedType(typeof(CastlingChessMove), "Castle")]
+	[JsonDerivedType(typeof(PromotionChessMove), "Promotion")]
 	public abstract class ChessMove : IMove
 	{
 		public ChessPosition From { get; set; }
 		public ChessPosition To { get; set; }
 
-		public abstract ChessMoveKind Kind { get; }
-
-		public virtual string MoveId => throw new NotImplementedException();
+		public abstract string MoveId { get; }
 
 		public abstract bool MutateBoard(ChessPiece?[,] board);
 	}
 
 	public class NormalChessMove : ChessMove
 	{
-		public override ChessMoveKind Kind => ChessMoveKind.Normal;
-
 		public override string MoveId => $"normal-{From.X}/{From.Y}-{To.X}/{To.Y}";
 
 		public override bool MutateBoard(ChessPiece?[,] board)
@@ -49,8 +45,6 @@ namespace Chezz.Game.Games.Chess
 
 	public class EnPassantChessMove : ChessMove
 	{
-		public override ChessMoveKind Kind => ChessMoveKind.EnPassant;
-
 		public override string MoveId => $"enpassant-{From.X}/{From.Y}-{To.X}/{To.Y}";
 
 		public override bool MutateBoard(ChessPiece?[,] board)
@@ -70,8 +64,6 @@ namespace Chezz.Game.Games.Chess
 
 	public class CastlingChessMove : ChessMove
 	{
-		public override ChessMoveKind Kind => ChessMoveKind.Castle;
-
 		public override string MoveId => $"castle-{From.X}/{From.Y}-{To.X}/{To.Y}";
 
 		public override bool MutateBoard(ChessPiece?[,] board)
@@ -93,6 +85,25 @@ namespace Chezz.Game.Games.Chess
 			// Rook jumps to the square the king passed over
 			board[rookX, From.Y] = null;
 			board[From.X + direction, From.Y] = rook;
+
+			return true;
+		}
+	}
+
+	public class PromotionChessMove : ChessMove
+	{
+		public required ChessPiece PromotionPiece { get; set; }
+
+		public override string MoveId => $"promotion-{From.X}/{From.Y}-{To.X}/{To.Y}-{PromotionPiece.Type}";
+
+
+		public override bool MutateBoard(ChessPiece?[,] board)
+		{
+			ChessPiece? from = board[From.X, From.Y];
+			if (from == null) return false;
+
+			board[From.X, From.Y] = null;
+			board[To.X, To.Y] = new ChessPiece(PromotionPiece.Type, from.PlayerId, from.Color);
 
 			return true;
 		}

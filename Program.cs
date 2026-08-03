@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection;
+using System.Text.Json.Serialization;
 
 namespace Chezz
 {
@@ -52,7 +54,18 @@ namespace Chezz
 					return $"{descriptor.ControllerName}_{action}";
 				});
 
+				options.UseAllOfForInheritance();
+				options.UseOneOfForPolymorphism();
+				options.SelectDiscriminatorNameUsing(baseType =>
+					baseType.GetCustomAttribute<JsonPolymorphicAttribute>()?.TypeDiscriminatorPropertyName);
+				options.SelectDiscriminatorValueUsing(subType =>
+					subType.BaseType?
+						.GetCustomAttributes<JsonDerivedTypeAttribute>()
+						.FirstOrDefault(a => a.DerivedType == subType)?
+						.TypeDiscriminator?.ToString());
+
 				options.SupportNonNullableReferenceTypes();
+				options.SchemaFilter<Chezz.OpenApi.PolymorphicDiscriminatorSchemaFilter>();
 				options.SchemaFilter<Chezz.OpenApi.RequireNonNullablePropertiesSchemaFilter>();
 
 				options.SchemaFilter<ChessGameStateSchemaFilter>();

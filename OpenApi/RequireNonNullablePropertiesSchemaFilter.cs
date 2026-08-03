@@ -7,7 +7,21 @@ public class RequireNonNullablePropertiesSchemaFilter : ISchemaFilter
 {
 	public void Apply(IOpenApiSchema schema, SchemaFilterContext context)
 	{
-		if (schema is not OpenApiSchema concrete || concrete.Properties is null)
+		Require(schema);
+	}
+
+	private static void Require(IOpenApiSchema schema)
+	{
+		if (schema is not OpenApiSchema concrete)
+			return;
+
+		if (concrete.AllOf is not null)
+		{
+			foreach (IOpenApiSchema member in concrete.AllOf)
+				Require(member);
+		}
+
+		if (concrete.Properties is null)
 			return;
 
 		foreach ((string name, IOpenApiSchema property) in concrete.Properties)

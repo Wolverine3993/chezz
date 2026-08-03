@@ -145,7 +145,20 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/ChessMove"
+                    "oneOf": [
+                      {
+                        "$ref": "#/components/schemas/NormalChessMove"
+                      },
+                      {
+                        "$ref": "#/components/schemas/EnPassantChessMove"
+                      },
+                      {
+                        "$ref": "#/components/schemas/CastlingChessMove"
+                      },
+                      {
+                        "$ref": "#/components/schemas/PromotionChessMove"
+                      }
+                    ]
                   }
                 }
               },
@@ -153,7 +166,20 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/ChessMove"
+                    "oneOf": [
+                      {
+                        "$ref": "#/components/schemas/NormalChessMove"
+                      },
+                      {
+                        "$ref": "#/components/schemas/EnPassantChessMove"
+                      },
+                      {
+                        "$ref": "#/components/schemas/CastlingChessMove"
+                      },
+                      {
+                        "$ref": "#/components/schemas/PromotionChessMove"
+                      }
+                    ]
                   }
                 }
               },
@@ -161,7 +187,20 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/ChessMove"
+                    "oneOf": [
+                      {
+                        "$ref": "#/components/schemas/NormalChessMove"
+                      },
+                      {
+                        "$ref": "#/components/schemas/EnPassantChessMove"
+                      },
+                      {
+                        "$ref": "#/components/schemas/CastlingChessMove"
+                      },
+                      {
+                        "$ref": "#/components/schemas/PromotionChessMove"
+                      }
+                    ]
                   }
                 }
               }
@@ -645,9 +684,47 @@
         },
         "additionalProperties": false
       },
+      "CastlingChessMove": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ChessMove"
+          },
+          {
+            "required": [
+              "kind",
+              "moveId"
+            ],
+            "type": "object",
+            "properties": {
+              "moveId": {
+                "type": "string",
+                "readOnly": true
+              },
+              "kind": {
+                "enum": [
+                  "Castle"
+                ],
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        ]
+      },
+      "ChessGameResult": {
+        "enum": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
       "ChessGameState": {
         "required": [
           "board",
+          "gameResult",
           "yourColor",
           "yourTurn"
         ],
@@ -672,6 +749,9 @@
           },
           "yourColor": {
             "$ref": "#/components/schemas/PieceColor"
+          },
+          "gameResult": {
+            "$ref": "#/components/schemas/ChessGameResult"
           }
         },
         "additionalProperties": false
@@ -685,21 +765,30 @@
         ],
         "type": "object",
         "properties": {
+          "kind": {
+            "type": "string"
+          },
           "from": {
             "$ref": "#/components/schemas/ChessPosition"
           },
           "to": {
             "$ref": "#/components/schemas/ChessPosition"
           },
-          "kind": {
-            "$ref": "#/components/schemas/ChessMoveKind"
-          },
           "moveId": {
             "type": "string",
             "readOnly": true
           }
         },
-        "additionalProperties": false
+        "additionalProperties": false,
+        "discriminator": {
+          "propertyName": "kind",
+          "mapping": {
+            "Normal": "#/components/schemas/NormalChessMove",
+            "EnPassant": "#/components/schemas/EnPassantChessMove",
+            "Castle": "#/components/schemas/CastlingChessMove",
+            "Promotion": "#/components/schemas/PromotionChessMove"
+          }
+        }
       },
       "ChessMoveChessPieceChessGameStateChessGameStoreChessGameImplementationMoveRequest": {
         "required": [
@@ -712,14 +801,6 @@
           }
         },
         "additionalProperties": false
-      },
-      "ChessMoveKind": {
-        "enum": [
-          "Normal",
-          "EnPassant",
-          "Castle"
-        ],
-        "type": "string"
       },
       "ChessPiece": {
         "required": [
@@ -775,6 +856,33 @@
         },
         "additionalProperties": false
       },
+      "EnPassantChessMove": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ChessMove"
+          },
+          {
+            "required": [
+              "kind",
+              "moveId"
+            ],
+            "type": "object",
+            "properties": {
+              "moveId": {
+                "type": "string",
+                "readOnly": true
+              },
+              "kind": {
+                "enum": [
+                  "EnPassant"
+                ],
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        ]
+      },
       "ForgotPasswordRequest": {
         "required": [
           "email"
@@ -788,43 +896,29 @@
         "additionalProperties": false
       },
       "HttpValidationProblemDetails": {
-        "required": [
-          "errors"
-        ],
-        "type": "object",
-        "properties": {
-          "type": {
-            "type": "string",
-            "nullable": true
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ProblemDetails"
           },
-          "title": {
-            "type": "string",
-            "nullable": true
-          },
-          "status": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "detail": {
-            "type": "string",
-            "nullable": true
-          },
-          "instance": {
-            "type": "string",
-            "nullable": true
-          },
-          "errors": {
+          {
+            "required": [
+              "errors"
+            ],
             "type": "object",
-            "additionalProperties": {
-              "type": "array",
-              "items": {
-                "type": "string"
+            "properties": {
+              "errors": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
               }
-            }
+            },
+            "additionalProperties": { }
           }
-        },
-        "additionalProperties": { }
+        ]
       },
       "InfoRequest": {
         "type": "object",
@@ -896,12 +990,97 @@
         },
         "additionalProperties": false
       },
+      "NormalChessMove": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ChessMove"
+          },
+          {
+            "required": [
+              "kind",
+              "moveId"
+            ],
+            "type": "object",
+            "properties": {
+              "moveId": {
+                "type": "string",
+                "readOnly": true
+              },
+              "kind": {
+                "enum": [
+                  "Normal"
+                ],
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        ]
+      },
       "PieceColor": {
         "enum": [
           "White",
           "Black"
         ],
         "type": "string"
+      },
+      "ProblemDetails": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "detail": {
+            "type": "string",
+            "nullable": true
+          },
+          "instance": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": { }
+      },
+      "PromotionChessMove": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ChessMove"
+          },
+          {
+            "required": [
+              "kind",
+              "moveId",
+              "promotionPiece"
+            ],
+            "type": "object",
+            "properties": {
+              "promotionPiece": {
+                "$ref": "#/components/schemas/ChessPiece"
+              },
+              "moveId": {
+                "type": "string",
+                "readOnly": true
+              },
+              "kind": {
+                "enum": [
+                  "Promotion"
+                ],
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        ]
       },
       "RefreshRequest": {
         "required": [

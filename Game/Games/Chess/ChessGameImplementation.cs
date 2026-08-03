@@ -192,6 +192,15 @@ public class ChessGameImplementation : IGameImplementation<ChessPiece, ChessMove
 	private static ChessMove CreateCastlingMove(int fromX, int fromY, int toX, int toY)
 		=> new CastlingChessMove { From = (fromX, fromY), To = (toX, toY) };
 
+	private static ChessMove CreatePromotionMove(int fromX, int fromY, int toX, int toY,
+		ChessPiece.ChessPieceEnum promotionPiece, ChessPiece piece)
+		=> new PromotionChessMove
+		{
+			From = (fromX, fromY),
+			To = (toX, toY),
+			PromotionPiece = new ChessPiece(promotionPiece, piece.PlayerId, piece.Color)
+		};
+
 	private static void AddCastlingMoves(ChessGameStore gameStore, ChessPiece?[,] board, List<ChessMove> moves,
 		int x, int y, ChessPiece king, int width, int height)
 	{
@@ -275,11 +284,12 @@ public class ChessGameImplementation : IGameImplementation<ChessPiece, ChessMove
 		// White is at the bottom (high y) and advances toward y = 0
 		int direction = piece.Color == ChessPiece.PieceColor.White ? -1 : 1;
 		int startRow = piece.Color == ChessPiece.PieceColor.White ? height - 2 : 1;
+		int promotionRow = piece.Color == ChessPiece.PieceColor.White ? 0 : height - 1;
 
 		int oneY = y + direction;
 		if (InBounds(x, oneY, width, height) && board[x, oneY] == null)
 		{
-			moves.Add(CreateMove(x, y, x, oneY));
+			AddPawnAdvanceOrPromotion(moves, x, y, x, oneY, promotionRow, piece);
 
 			int twoY = y + (2 * direction);
 			if (y == startRow && InBounds(x, twoY, width, height) && board[x, twoY] == null)
@@ -297,7 +307,7 @@ public class ChessGameImplementation : IGameImplementation<ChessPiece, ChessMove
 			ChessPiece? target = board[nx, ny];
 			if (target != null)
 			{
-				if (target.PlayerId != piece.PlayerId) moves.Add(CreateMove(x, y, nx, ny));
+				if (target.PlayerId != piece.PlayerId) AddPawnAdvanceOrPromotion(moves, x, y, nx, ny, promotionRow, piece);
 				continue;
 			}
 
@@ -305,6 +315,30 @@ public class ChessGameImplementation : IGameImplementation<ChessPiece, ChessMove
 			{
 				moves.Add(CreateEnPassantMove(x, y, nx, ny));
 			}
+		}
+	}
+
+	private static readonly ChessPiece.ChessPieceEnum[] PromotionPieces =
+	{
+		ChessPiece.ChessPieceEnum.Queen,
+		ChessPiece.ChessPieceEnum.Rook,
+		ChessPiece.ChessPieceEnum.Bishop,
+		ChessPiece.ChessPieceEnum.Knight,
+	};
+
+	private static void AddPawnAdvanceOrPromotion(List<ChessMove> moves, int fromX, int fromY,
+		int toX, int toY, int promotionRow, ChessPiece piece)
+	{
+		if (toY == promotionRow)
+		{
+			foreach (ChessPiece.ChessPieceEnum promotionPiece in PromotionPieces)
+			{
+				moves.Add(CreatePromotionMove(fromX, fromY, toX, toY, promotionPiece, piece));
+			}
+		}
+		else
+		{
+			moves.Add(CreateMove(fromX, fromY, toX, toY));
 		}
 	}
 
@@ -351,6 +385,7 @@ public class ChessGameImplementation : IGameImplementation<ChessPiece, ChessMove
 			Board = board,
 			YourTurn = CurrentTurn == playerIndex,
 			YourColor = playerIndex == 0 ? ChessPiece.PieceColor.White : ChessPiece.PieceColor.Black,
+			GameResult = ChessGameResult.NoResult,
 		};
 	}
 

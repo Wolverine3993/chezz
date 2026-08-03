@@ -20,19 +20,41 @@ const ChessPiece = z.object({
   color: PieceColor,
   imageUrl: z.string(),
 });
+const ChessGameResult = z.union([
+  z.literal(0),
+  z.literal(1),
+  z.literal(2),
+  z.literal(3),
+]);
 const ChessGameState = z.object({
   board: z.array(z.array(ChessPiece.nullable())),
   yourTurn: z.boolean(),
   yourColor: PieceColor,
+  gameResult: ChessGameResult,
 });
 const ChessPosition = z.object({ x: z.number().int(), y: z.number().int() });
-const ChessMoveKind = z.enum(["Normal", "EnPassant", "Castle"]);
 const ChessMove = z.object({
+  kind: z.string(),
   from: ChessPosition,
   to: ChessPosition,
-  kind: ChessMoveKind,
   moveId: z.string(),
 });
+const NormalChessMove = ChessMove.and(
+  z.object({ moveId: z.string(), kind: z.literal("Normal") })
+);
+const EnPassantChessMove = ChessMove.and(
+  z.object({ moveId: z.string(), kind: z.literal("EnPassant") })
+);
+const CastlingChessMove = ChessMove.and(
+  z.object({ moveId: z.string(), kind: z.literal("Castle") })
+);
+const PromotionChessMove = ChessMove.and(
+  z.object({
+    promotionPiece: ChessPiece,
+    moveId: z.string(),
+    kind: z.literal("Promotion"),
+  })
+);
 const ChessMoveChessPieceChessGameStateChessGameStoreChessGameImplementationMoveRequest =
   z.object({ moveId: z.string() });
 const RegisterRequest = z.object({
@@ -72,10 +94,14 @@ export const schemas = {
   ChessPieceEnum,
   PieceColor,
   ChessPiece,
+  ChessGameResult,
   ChessGameState,
   ChessPosition,
-  ChessMoveKind,
   ChessMove,
+  NormalChessMove,
+  EnPassantChessMove,
+  CastlingChessMove,
+  PromotionChessMove,
   ChessMoveChessPieceChessGameStateChessGameStoreChessGameImplementationMoveRequest,
   RegisterRequest,
   LoginRequest,
@@ -120,7 +146,14 @@ const endpoints = makeApi([
         schema: z.string().uuid(),
       },
     ],
-    response: z.array(ChessMove),
+    response: z.array(
+      z.union([
+        NormalChessMove,
+        EnPassantChessMove,
+        CastlingChessMove,
+        PromotionChessMove,
+      ])
+    ),
   },
   {
     method: "get",
