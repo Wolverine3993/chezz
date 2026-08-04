@@ -1,4 +1,4 @@
-﻿namespace Chezz.Identity
+﻿namespace Chezz.RequestSchemas.Identity
 {
     public class RegisterRequest
     {
