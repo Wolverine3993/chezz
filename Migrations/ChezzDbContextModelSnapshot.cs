@@ -107,26 +107,6 @@ namespace Chezz.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("Chezz.Database.Models.UserRelationship", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("User1Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("User2Id")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("User1Id");
-
-                    b.HasIndex("User2Id");
-
-                    b.ToTable("UserRelationships");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.Property<int>("Id")
@@ -227,21 +207,6 @@ namespace Chezz.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
-                });
-
-            modelBuilder.Entity("Chezz.Database.Models.UserRelationship", b =>
-                {
-                    b.HasOne("Chezz.Database.Models.ChezzUser", "User1")
-                        .WithMany()
-                        .HasForeignKey("User1Id");
-
-                    b.HasOne("Chezz.Database.Models.ChezzUser", "User2")
-                        .WithMany()
-                        .HasForeignKey("User2Id");
-
-                    b.Navigation("User1");
-
-                    b.Navigation("User2");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
