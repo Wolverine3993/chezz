@@ -7,5 +7,15 @@ namespace Chezz.Database
 	public class ChezzDbContext : IdentityDbContext<ChezzUser, ChezzRole, string>
 	{
 		public ChezzDbContext(DbContextOptions<ChezzDbContext> options) : base(options) { }
+		public DbSet<UserRelationship> UserRelationships { get; set; }
+
+		protected override void OnModelCreating(ModelBuilder modelBuilder)
+		{
+			modelBuilder.Entity<UserRelationship>()
+				.HasIndex(x => new { x.User1, x.User2 })
+				.IsUnique();
+
+			base.OnModelCreating(modelBuilder);
+		}
 	}
 }
