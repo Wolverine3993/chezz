@@ -616,7 +616,7 @@
         }
       }
     },
-    "/api/relationship": {
+    "/api/relationship/add-friend": {
       "post": {
         "tags": [
           "UserRelationship"
@@ -626,17 +626,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateRelationshipRequest"
+                "$ref": "#/components/schemas/RelationshipRequest"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateRelationshipRequest"
+                "$ref": "#/components/schemas/RelationshipRequest"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateRelationshipRequest"
+                "$ref": "#/components/schemas/RelationshipRequest"
               }
             }
           }
@@ -662,7 +662,9 @@
             "description": "Not Found"
           }
         }
-      },
+      }
+    },
+    "/api/relationship/get-friends": {
       "get": {
         "tags": [
           "UserRelationship"
@@ -686,6 +688,51 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/PagedFriendResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/relationship/remove-friend": {
+      "delete": {
+        "tags": [
+          "UserRelationship"
+        ],
+        "operationId": "UserRelationship_RemoveFriend",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RelationshipRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RelationshipRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RelationshipRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  }
                 }
               }
             }
@@ -810,19 +857,6 @@
           "y": {
             "type": "integer",
             "format": "int32"
-          }
-        },
-        "additionalProperties": false
-      },
-      "CreateRelationshipRequest": {
-        "required": [
-          "username"
-        ],
-        "type": "object",
-        "properties": {
-          "username": {
-            "type": "string",
-            "nullable": true
           }
         },
         "additionalProperties": false
@@ -1020,6 +1054,19 @@
             "nullable": true
           },
           "password": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "RelationshipRequest": {
+        "required": [
+          "username"
+        ],
+        "type": "object",
+        "properties": {
+          "username": {
             "type": "string",
             "nullable": true
           }

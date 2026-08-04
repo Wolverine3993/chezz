@@ -7,22 +7,16 @@ namespace Chezz.Database.EntityManagers
     {
         public async Task<bool> AddUserRelationshipAsync(ChezzUser user1, ChezzUser user2)
         {
-            var newRelationship1 = new UserRelationship
+            var newRelationship = new UserRelationship
             {
                 Id = Guid.NewGuid().ToString(),
                 User1 = user1,
                 User2 = user2,
             };
-            var newRelationship2 = new UserRelationship
-            {
-                Id = Guid.NewGuid().ToString(),
-                User1 = user2,
-                User2 = user1,
-            };
 
             try
             {
-                await _dbContext.UserRelationships.AddRangeAsync([newRelationship1, newRelationship2]);
+                await _dbContext.UserRelationships.AddAsync(newRelationship);
                 await _dbContext.SaveChangesAsync();
             }
             catch
@@ -31,6 +25,22 @@ namespace Chezz.Database.EntityManagers
             }
 
             return true;
+        }
+
+        public async Task RemoveUserRelationshipAsync(ChezzUser user1, ChezzUser user2)
+        {
+            var targetRelationship = await _dbContext.UserRelationships
+                .Include(relationship => relationship.User1)
+                .Include(relationship => relationship.User2)
+                .Where(relationship => (relationship.User1 == user1 && relationship.User2 == user2)
+                                    || (relationship.User1 == user2 && relationship.User2 == user1))
+                .ToArrayAsync();
+            
+            if (targetRelationship is not null)
+            {
+                _dbContext.UserRelationships.RemoveRange(targetRelationship);
+                await _dbContext.SaveChangesAsync();
+            }
         }
 
         public async Task<IEnumerable<UserRelationship>> GetUserRelationshipsAsync(ChezzUser user, int page)

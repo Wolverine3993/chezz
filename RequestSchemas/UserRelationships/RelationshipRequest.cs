@@ -1,6 +1,6 @@
 ﻿namespace Chezz.RequestSchemas.UserRelationships
 {
-    public class CreateRelationshipRequest
+    public class RelationshipRequest
     {
         public required string Username { get; set; }
     }
