@@ -12,8 +12,11 @@ namespace Chezz.Database
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
 			modelBuilder.Entity<UserRelationship>()
-				.HasIndex(x => new { x.User1, x.User2 })
+				.HasIndex(x => new { x.User1Id, x.User2Id })
 				.IsUnique();
+
+			modelBuilder.Entity<UserRelationship>()
+				.HasIndex(x => x.User1Id);
 
 			base.OnModelCreating(modelBuilder);
 		}
