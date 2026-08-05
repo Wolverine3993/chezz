@@ -12,7 +12,7 @@ namespace Chezz.Controllers;
 [Authorize]
 public abstract class GameController<TMove, TPiece, TGameStatus, TGs, TGi> : ControllerBase where TPiece : IPiece
 	where TMove : IMove
-	where TGs : IGameState<TPiece, TMove>, new()
+	where TGs : IGameState<TMove>, new()
 	where TGi : IGameImplementation<TPiece, TMove, TGameStatus, TGs>, new()
 {
 	protected GameRegistry<TMove, TPiece, TGameStatus, TGs, TGi> GameRegistry { get; }

@@ -5,21 +5,11 @@ const LobbyInformation = z.object({
   playerUsernames: z.array(z.string()),
   gameId: z.string().uuid().nullish(),
 });
-const ChessPieceEnum = z.enum([
-  "Pawn",
-  "Knight",
-  "Bishop",
-  "Rook",
-  "Queen",
-  "King",
-]);
-const PieceColor = z.enum(["White", "Black"]);
-const ChessPiece = z.object({
-  type: ChessPieceEnum,
-  playerId: z.string(),
-  color: PieceColor,
-  imageUrl: z.string(),
+const PackedBoardState = z.object({
+  packedBoard: z.string(),
+  imageUrls: z.record(z.string()),
 });
+const PieceColor = z.enum(["White", "Black"]);
 const ChessGameResult = z.union([
   z.literal(0),
   z.literal(1),
@@ -27,7 +17,7 @@ const ChessGameResult = z.union([
   z.literal(3),
 ]);
 const ChessGameState = z.object({
-  board: z.array(z.array(ChessPiece.nullable())),
+  packedBoard: PackedBoardState,
   yourTurn: z.boolean(),
   yourColor: PieceColor,
   gameResult: ChessGameResult,
@@ -48,6 +38,20 @@ const EnPassantChessMove = ChessMove.and(
 const CastlingChessMove = ChessMove.and(
   z.object({ moveId: z.string(), kind: z.literal("Castle") })
 );
+const ChessPieceEnum = z.enum([
+  "Pawn",
+  "Knight",
+  "Bishop",
+  "Rook",
+  "Queen",
+  "King",
+]);
+const ChessPiece = z.object({
+  type: ChessPieceEnum,
+  playerId: z.string(),
+  color: PieceColor,
+  imageUrl: z.string(),
+});
 const PromotionChessMove = ChessMove.and(
   z.object({
     promotionPiece: ChessPiece,
@@ -91,9 +95,8 @@ const InfoRequest = z
 
 export const schemas = {
   LobbyInformation,
-  ChessPieceEnum,
+  PackedBoardState,
   PieceColor,
-  ChessPiece,
   ChessGameResult,
   ChessGameState,
   ChessPosition,
@@ -101,6 +104,8 @@ export const schemas = {
   NormalChessMove,
   EnPassantChessMove,
   CastlingChessMove,
+  ChessPieceEnum,
+  ChessPiece,
   PromotionChessMove,
   ChessMoveChessPieceChessGameStateChessGameStoreChessGameImplementationMoveRequest,
   RegisterRequest,

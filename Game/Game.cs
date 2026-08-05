@@ -6,7 +6,7 @@ namespace Chezz.Game;
 
 public class Game<TMove, TPiece, TGameStatus, TGameState, TGameImplementation> : IBoardStyle where TPiece : IPiece
 	where TMove : IMove
-	where TGameState : IGameState<TPiece, TMove>
+	where TGameState : IGameState<TMove>
 	where TGameImplementation : IGameImplementation<TPiece, TMove, TGameStatus, TGameState>
 {
 	public Guid Id { get; }
@@ -69,7 +69,6 @@ public class Game<TMove, TPiece, TGameStatus, TGameState, TGameImplementation> :
 		GameImplementation.OnMakeMove(GameStore, player, move);
 		currentMoves = null;
 		await Notify();
-		Console.WriteLine("made move");
 		return true;
 	}
 

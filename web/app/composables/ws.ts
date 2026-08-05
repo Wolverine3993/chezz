@@ -32,8 +32,14 @@ export class WebsocketController {
   }
 
   addListener(listener: (message: string) => Promise<any>) {
-    this.listeners.push({ callback: listener, queueIndex: 0});
+    this.listeners.push({ callback: listener, queueIndex: 0 });
     this.reconcileListener(this.listeners.length - 1);
+    return () => this.removeListener(listener);
+  }
+
+  removeListener(listener: (message: string) => Promise<any>) {
+    const index = this.listeners.findIndex((l) => l.callback === listener);
+    if (index !== -1) this.listeners.splice(index, 1);
   }
 
   private async reconcileListener(index: number) {

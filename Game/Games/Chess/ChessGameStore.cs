@@ -1,9 +1,10 @@
 using Chezz.Game.Func;
 using Chezz.Game.Players;
+using System.Text;
 
 namespace Chezz.Game.Games.Chess;
 
-public class ChessGameStore : IGameState<ChessPiece, ChessMove>
+public class ChessGameStore : IGameState<ChessMove>
 {
 	public Lobby Lobby { get; set; }
 	public ChessPiece?[,] Board { get; private set; }
@@ -75,5 +76,42 @@ public class ChessGameStore : IGameState<ChessPiece, ChessMove>
 		moveList.Add((player, move));
 
 		return true;
+	}
+
+	public PackedBoardState ToPackedBoard()
+	{
+		StringBuilder builder = new StringBuilder();
+		Dictionary<string, string> imageUrls = new();
+		for (int x = 0; x < Board.GetLength(0); x++)
+		{
+			for (int y = 0; y < Board.GetLength(1); y++)
+			{
+				var piece = Board[x, y];
+				if (piece == null)
+				{
+					builder.Append(".");
+					continue;
+				}
+
+				var capital = piece.Color == ChessPiece.PieceColor.White;
+				var pieceChar = piece.Type switch
+				{
+					ChessPiece.ChessPieceEnum.Pawn => "p",
+					ChessPiece.ChessPieceEnum.Knight => "n",
+					ChessPiece.ChessPieceEnum.Bishop => "b",
+					ChessPiece.ChessPieceEnum.Rook => "r",
+					ChessPiece.ChessPieceEnum.Queen => "q",
+					ChessPiece.ChessPieceEnum.King => "k",
+				};
+				pieceChar = capital ? pieceChar.ToUpper() : pieceChar.ToLower();
+
+				builder.Append(pieceChar);
+				imageUrls.TryAdd(pieceChar, piece.ImageUrl);
+			}
+			builder.Append("\n");
+		}
+		string packedBoard = builder.ToString();
+
+		return new() { PackedBoard = packedBoard, ImageUrls = imageUrls }; ;
 	}
 }

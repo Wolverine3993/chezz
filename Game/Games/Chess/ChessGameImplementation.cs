@@ -366,27 +366,53 @@ public class ChessGameImplementation : IGameImplementation<ChessPiece, ChessMove
 	}
 	public ChessGameState GetStatus(ChessGameStore gameStore, IPlayer player)
 	{
-		int width = gameStore.Board.GetLength(0);
-		int height = gameStore.Board.GetLength(1);
-		ChessPiece?[][] board = new ChessPiece?[width][];
-		for (int x = 0; x < width; x++)
-		{
-			board[x] = new ChessPiece?[height];
-			for (int y = 0; y < height; y++)
-			{
-				board[x][y] = gameStore.Board[x, y];
-			}
-		}
-
 		int playerIndex = gameStore.Lobby.Players.FindIndex(v => v.Id == player.Id);
 
 		return new()
 		{
-			Board = board,
+			PackedBoard = gameStore.ToPackedBoard(),
 			YourTurn = CurrentTurn == playerIndex,
 			YourColor = playerIndex == 0 ? ChessPiece.PieceColor.White : ChessPiece.PieceColor.Black,
-			GameResult = ChessGameResult.NoResult,
+			GameResult = DetermineResult(gameStore, player),
 		};
+	}
+
+	private ChessGameResult DetermineResult(ChessGameStore gameStore, IPlayer player)
+	{
+		IReadOnlyList<IPlayer> players = gameStore.Lobby.Players;
+		if (CurrentTurn < 0 || CurrentTurn >= players.Count) return ChessGameResult.NoResult;
+
+		IPlayer playerToMove = players[CurrentTurn];
+
+		// While the player to move still has a legal move, the game is ongoing.
+		if (GetValidMoves(gameStore, playerToMove).Count > 0) return ChessGameResult.NoResult;
+
+		// No legal moves: checkmate if in check, otherwise stalemate (draw).
+		if (!IsPlayerInCheck(gameStore, playerToMove)) return ChessGameResult.Draw;
+
+		// Checkmate: the player to move loses, everyone else wins.
+		return player.Id == playerToMove.Id ? ChessGameResult.Loss : ChessGameResult.Win;
+	}
+
+	private static bool IsPlayerInCheck(ChessGameStore gameStore, IPlayer player)
+	{
+		ChessPiece?[,] board = gameStore.Board;
+		int width = board.GetLength(0);
+		int height = board.GetLength(1);
+
+		for (int x = 0; x < width; x++)
+		{
+			for (int y = 0; y < height; y++)
+			{
+				ChessPiece? piece = board[x, y];
+				if (piece != null && piece.PlayerId == player.Id && piece.Type == ChessPiece.ChessPieceEnum.King)
+				{
+					return IsSquareAttacked(board, x, y, piece.Color, player.Id, width, height);
+				}
+			}
+		}
+
+		return false;
 	}
 
 }

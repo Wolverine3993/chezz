@@ -2,8 +2,8 @@
     {{ websocket.connected }}
 
     <div v-if="currentState.status === 'game'">
-        <div v-if="currentState.gameState?.board" class="grid grid-cols-8 w-fit ">
-            <div v-for="(col, colIdx) in viewColour === 'White' ? currentState.gameState.board : currentState.gameState.board.toReversed()"
+        <div v-if="board" class="grid grid-cols-8 w-fit ">
+            <div v-for="(col, colIdx) in viewColour === 'White' ? board : board.toReversed()"
                 class="grid grid-rows-8 w-fit">
                 <div v-for="(square, rowIdx) in viewColour === 'White' ? col : col.toReversed()"
                     :class="['relative w-16 h-16 flex items-center justify-center',
@@ -45,6 +45,8 @@
 </template>
 
 <script setup lang="ts">
+import { unpackBoard } from '~/composables/chess';
+
 const route = useRoute();
 
 type GameState = { status: "lobby", playerUsernames: string[] } | { status: "game", playerUsernames: string[], gameId: string, gameState?: Awaited<ReturnType<typeof api.Chess_GetGameStatus>> };
@@ -59,6 +61,7 @@ const viewColour = ref<ViewColour>("White");
 const currentMoves = ref<Array<ChessMove>>([]);
 const currentSelectedPiece = ref<ChessMove["from"] | null>(null);
 const promotionPickerAt = ref<{ colIdx: number, rowIdx: number } | null>(null);
+const board = computed(() => currentState.value.status === "game" && currentState.value.gameState ? unpackBoard(currentState.value.gameState.packedBoard) : undefined);
 
 type HighlightSquare = {
     colIdx: number;
@@ -120,7 +123,7 @@ const selectedView = computed<{ colIdx: number, rowIdx: number } | null>(() => {
 const websocket = createWebsocket(
     `ws://localhost:5281/api/games/chess/lobby/${id}/ws`,
 );
-websocket.addListener(async () => {
+const removeListener = websocket.addListener(async () => {
     if (currentState.value.status === "lobby") {
         const lobbyStatus = await api.Chess_GetLobbyStatus({ params: { lobbyId: id } });
         if (lobbyStatus.playerUsernames) {
@@ -137,9 +140,15 @@ websocket.addListener(async () => {
         const gameState = await api.Chess_GetGameStatus({ params: { gameId: currentState.value.gameId } });
         currentState.value.gameState = gameState;
         viewColour.value = gameState.yourColor;
-        currentMoves.value = await api.Chess_GetMoves({ params: { gameId: currentState.value.gameId } });
+        if (currentState.value.gameState.yourTurn) {
+            currentMoves.value = await api.Chess_GetMoves({ params: { gameId: currentState.value.gameId } });
+        } else {
+            currentMoves.value = [];
+        }
     }
 });
+
+onScopeDispose(() => removeListener());
 
 function viewToBoard(colIdx: number, rowIdx: number): [number, number] {
     if (viewColour.value === "Black") return [7 - colIdx, 7 - rowIdx];

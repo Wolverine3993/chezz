@@ -723,26 +723,15 @@
       },
       "ChessGameState": {
         "required": [
-          "board",
           "gameResult",
+          "packedBoard",
           "yourColor",
           "yourTurn"
         ],
         "type": "object",
         "properties": {
-          "board": {
-            "type": "array",
-            "items": {
-              "type": "array",
-              "items": {
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/ChessPiece"
-                  }
-                ],
-                "nullable": true
-              }
-            }
+          "packedBoard": {
+            "$ref": "#/components/schemas/PackedBoardState"
           },
           "yourTurn": {
             "type": "boolean"
@@ -1016,6 +1005,25 @@
             "additionalProperties": false
           }
         ]
+      },
+      "PackedBoardState": {
+        "required": [
+          "imageUrls",
+          "packedBoard"
+        ],
+        "type": "object",
+        "properties": {
+          "packedBoard": {
+            "type": "string"
+          },
+          "imageUrls": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        },
+        "additionalProperties": false
       },
       "PieceColor": {
         "enum": [

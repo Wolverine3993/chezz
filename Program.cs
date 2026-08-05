@@ -86,8 +86,8 @@ namespace Chezz
 					options.AddDefaultPolicy(policy =>
 					{
 						policy.WithOrigins("http://localhost:3000")
-						.AllowAnyOrigin()
 						.AllowAnyMethod()
+						.AllowCredentials()
 						.AllowAnyHeader();
 					});
 				});
