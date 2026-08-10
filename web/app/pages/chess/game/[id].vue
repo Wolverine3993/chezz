@@ -1,4 +1,8 @@
 <template>
+    <div v-if="currentState.status === 'lobby'">
+        <label for="private">Private</label>
+        <input id="private" type="checkbox" v-model="check" @change="changePrivacy"/>
+    </div>
     {{ websocket.connected }}
 
     <div v-if="currentState.status === 'game'">
@@ -44,6 +48,11 @@ const currentState = ref<GameState>({ status: "lobby", playerUsernames: [] });
 const viewColour = ref<ViewColour>("White");
 const currentMoves = ref<Array<ChessMove>>([]);
 const currentSelectedPiece = ref<ChessMove["from"] | null>(null);
+
+const check = ref();
+api.Chess_GetLobbyPrivacy({params:{lobbyId:id}}).then((isPrivate) => {
+    check.value = isPrivate;
+})
 
 const highlightMoves = computed<Array<{ colIdx: number, rowIdx: number }> | null>(() => {
     if (currentSelectedPiece.value === null) return null;
@@ -115,5 +124,10 @@ async function makeMove(e: Event, to: [number, number]) {
     if (currentState.value.status !== "game") return;
     if (currentSelectedPiece.value === null) return;
     await api.Chess_MakeMove({ from: currentSelectedPiece.value, to: { x: to[0], y: to[1] }, }, { params: { gameId: currentState.value.gameId } });
+}
+
+async function changePrivacy() {
+    await api.Chess_ChangeLobbyPrivacy(undefined, { queries: { isPrivate: check.value }, params: { lobbyId: id }});
+    check.value = await api.Chess_GetLobbyPrivacy({params: {lobbyId: id}});
 }
 </script>

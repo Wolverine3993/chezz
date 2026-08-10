@@ -41,7 +41,7 @@ public abstract class GameController<TMove, TPiece, TGameStatus, TGs, TGi> : Con
 		ChezzUser? user = await UserManager.GetUserAsync(HttpContext.User);
 		if (user == null) throw new ChezzError(StatusCodes.Status401Unauthorized, "User is null");
 
-		return (lobby, user);
+        return (lobby, user);
 	}
 
 	private async Task<(Game<TMove, TPiece, TGameStatus, TGs, TGi>, ChezzUser)> GetGameUser(Guid gameId)
@@ -120,10 +120,19 @@ public abstract class GameController<TMove, TPiece, TGameStatus, TGs, TGi> : Con
 	public async Task ChangeLobbyPrivacy(Guid lobbyId, [FromQuery] bool isPrivate)
 	{
 		var (lobby, user) = await GetLobbyUser(lobbyId);
-		lobby.ChangePrivacy(isPrivate);
+		if (!lobby.Players.Any(player => player.Id == user.Id)) throw new ChezzError(StatusCodes.Status401Unauthorized, "User is not in lobby");
+
+        lobby.ChangePrivacy(isPrivate);
 	}
 
-	[HttpGet("game/{gameId}/status", Name = "GetGameStatus")]
+    [HttpGet("lobby/{lobbyId}/privacy", Name = "GetLobbyPrivacy")]
+    public async Task<bool> GetLobbyPrivacy(Guid lobbyId)
+    {
+        var (lobby, user) = await GetLobbyUser(lobbyId);
+		return lobby.IsPrivate;
+    }
+
+    [HttpGet("game/{gameId}/status", Name = "GetGameStatus")]
 	public async Task<TGameStatus> GetGameStatus(Guid gameId)
 	{
 		var (game, user) = await GetGameUser(gameId);

@@ -5,6 +5,7 @@ const LobbyInformation = z
   .object({
     playerUsernames: z.array(z.string()).nullable(),
     gameId: z.string().uuid().nullable(),
+    isPrivate: z.boolean(),
   })
   .partial();
 const ChessPieceEnum = z.enum([
@@ -140,6 +141,39 @@ const endpoints = makeApi([
     response: ChessGameState,
   },
   {
+    method: "post",
+    path: "/api/games/chess/lobby/:lobbyId/privacy",
+    alias: "Chess_ChangeLobbyPrivacy",
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "lobbyId",
+        type: "Path",
+        schema: z.string().uuid(),
+      },
+      {
+        name: "isPrivate",
+        type: "Query",
+        schema: z.boolean().optional(),
+      },
+    ],
+    response: z.void(),
+  },
+  {
+    method: "get",
+    path: "/api/games/chess/lobby/:lobbyId/privacy",
+    alias: "Chess_GetLobbyPrivacy",
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "lobbyId",
+        type: "Path",
+        schema: z.string().uuid(),
+      },
+    ],
+    response: z.boolean(),
+  },
+  {
     method: "get",
     path: "/api/games/chess/lobby/:lobbyId/status",
     alias: "Chess_GetLobbyStatus",
@@ -158,6 +192,13 @@ const endpoints = makeApi([
     path: "/api/games/chess/lobby/create",
     alias: "Chess_CreateLobby",
     requestFormat: "json",
+    parameters: [
+      {
+        name: "isPrivate",
+        type: "Query",
+        schema: z.boolean().optional().default(true),
+      },
+    ],
     response: z.string().uuid(),
   },
   {
@@ -348,16 +389,8 @@ const endpoints = makeApi([
   },
 ]);
 
-export const api = new Zodios(endpoints, {
-  axiosConfig: {
-    withCredentials: true
-  }
-});
+export const api = new Zodios(endpoints);
 
 export function createApiClient(baseUrl: string, options?: ZodiosOptions) {
-  return new Zodios(baseUrl, endpoints, {
-    axiosConfig: {
-      withCredentials: true
-    }
-  });
+  return new Zodios(baseUrl, endpoints, options);
 }
