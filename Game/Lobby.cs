@@ -18,10 +18,12 @@ public class Lobby
 
 	public GameType GameType { get; }
 	public Guid? GameId { get; set { field = value; Notify(); } } = null;
+	public bool IsPrivate { get; private set; }
 
-	public Lobby(int maxPlayers, GameType gameType)
+	public Lobby(int maxPlayers, GameType gameType, bool isPrivate = true)
 	{
 		this.maxPlayers = maxPlayers;
+		IsPrivate = isPrivate;
 		GameType = gameType;
 		_players = new();
 	}
@@ -56,6 +58,11 @@ public class Lobby
 		return _players.Count == maxPlayers;
 	}
 
+	public void ChangePrivacy(bool isPrivate)
+	{
+		IsPrivate = isPrivate;
+	}
+
 	public IPlayer? FromChezzUser(ChezzUser user)
 	{
 		return _players.TryGetValue(user.Id, out IPlayer? player) ? player : null;
@@ -63,10 +70,10 @@ public class Lobby
 
 	public List<IPlayer> Players { get { return _players.Values.ToList(); } }
 
-	public record LobbyInformation(List<string> PlayerUsernames, Guid? GameId);
+	public record LobbyInformation(List<string> PlayerUsernames, Guid? GameId, bool IsPrivate);
 
 	public LobbyInformation GetLobbyInformation()
 	{
-		return new LobbyInformation(_players.Select(v => v.Value.Username).ToList(), GameId);
+		return new LobbyInformation(_players.Select(v => v.Value.Username).ToList(), GameId, IsPrivate);
 	}
 }

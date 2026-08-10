@@ -41,7 +41,7 @@ public abstract class GameController<TMove, TPiece, TGameStatus, TGs, TGi> : Con
 		ChezzUser? user = await UserManager.GetUserAsync(HttpContext.User);
 		if (user == null) throw new ChezzError(StatusCodes.Status401Unauthorized, "User is null");
 
-		return (lobby, user);
+        return (lobby, user);
 	}
 
 	private async Task<(Game<TMove, TPiece, TGameStatus, TGs, TGi>, ChezzUser)> GetGameUser(Guid gameId)
@@ -57,14 +57,25 @@ public abstract class GameController<TMove, TPiece, TGameStatus, TGs, TGi> : Con
 
 
 	[HttpPost("lobby/create", Name = "CreateLobby")]
-	public async Task<Guid> CreateLobby()
+	public async Task<Guid> CreateLobby([FromQuery] bool isPrivate = true)
 	{
-		Lobby lobby = new Lobby(MaxPlayers, GameType);
+		Lobby lobby = new Lobby(MaxPlayers, GameType, isPrivate);
 		LobbyRegistry.Add(lobby);
 		return lobby.Id;
 	}
 
-	[Route("lobby/{lobbyId}/ws")]
+    [HttpPost("lobby/matchmake", Name = "Matchmake")]
+    public async Task<Guid> Matchmake()
+    {
+        var openLobby = LobbyRegistry.All(GameType)
+			.Where(lobby => !lobby.IsPrivate)
+            .FirstOrDefault(lobby => lobby.Players.Count < MaxPlayers);
+
+        var lobbyId = openLobby?.Id ?? await CreateLobby(false);
+        return lobbyId;
+    }
+
+    [Route("lobby/{lobbyId}/ws")]
 	[ApiExplorerSettings(IgnoreApi = true)]
 	public async Task JoinLobby(Guid lobbyId)
 	{
@@ -105,7 +116,23 @@ public abstract class GameController<TMove, TPiece, TGameStatus, TGs, TGi> : Con
 		return lobby.GetLobbyInformation();
 	}
 
-	[HttpGet("game/{gameId}/status", Name = "GetGameStatus")]
+	[HttpPost("lobby/{lobbyId}/privacy", Name = "ChangeLobbyPrivacy")]
+	public async Task ChangeLobbyPrivacy(Guid lobbyId, [FromQuery] bool isPrivate)
+	{
+		var (lobby, user) = await GetLobbyUser(lobbyId);
+		if (!lobby.Players.Any(player => player.Id == user.Id)) throw new ChezzError(StatusCodes.Status401Unauthorized, "User is not in lobby");
+
+        lobby.ChangePrivacy(isPrivate);
+	}
+
+    [HttpGet("lobby/{lobbyId}/privacy", Name = "GetLobbyPrivacy")]
+    public async Task<bool> GetLobbyPrivacy(Guid lobbyId)
+    {
+        var (lobby, user) = await GetLobbyUser(lobbyId);
+		return lobby.IsPrivate;
+    }
+
+    [HttpGet("game/{gameId}/status", Name = "GetGameStatus")]
 	public async Task<TGameStatus> GetGameStatus(Guid gameId)
 	{
 		var (game, user) = await GetGameUser(gameId);
