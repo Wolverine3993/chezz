@@ -38,6 +38,39 @@
         }
       }
     },
+    "/api/games/chess/lobby/matchmake": {
+      "post": {
+        "tags": [
+          "Chess"
+        ],
+        "operationId": "Chess_Matchmake",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/games/chess/lobby/{lobbyId}/status": {
       "get": {
         "tags": [

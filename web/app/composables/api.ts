@@ -1,12 +1,6 @@
 import { makeApi, Zodios, type ZodiosOptions } from "@zodios/core";
 import { z } from "zod";
 
-const credentialOptions: ZodiosOptions = {
-  axiosConfig: {
-    withCredentials: true
-  }
-};
-
 const LobbyInformation = z
   .object({
     playerUsernames: z.array(z.string()).nullable(),
@@ -163,6 +157,13 @@ const endpoints = makeApi([
     method: "post",
     path: "/api/games/chess/lobby/create",
     alias: "Chess_CreateLobby",
+    requestFormat: "json",
+    response: z.string().uuid(),
+  },
+  {
+    method: "post",
+    path: "/api/games/chess/lobby/matchmake",
+    alias: "Chess_Matchmake",
     requestFormat: "json",
     response: z.string().uuid(),
   },
@@ -347,8 +348,16 @@ const endpoints = makeApi([
   },
 ]);
 
-export const api = new Zodios(endpoints, credentialOptions);
+export const api = new Zodios(endpoints, {
+  axiosConfig: {
+    withCredentials: true
+  }
+});
 
 export function createApiClient(baseUrl: string, options?: ZodiosOptions) {
-  return new Zodios(baseUrl, endpoints, options ? options : credentialOptions);
+  return new Zodios(baseUrl, endpoints, {
+    axiosConfig: {
+      withCredentials: true
+    }
+  });
 }

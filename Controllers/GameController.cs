@@ -57,14 +57,25 @@ public abstract class GameController<TMove, TPiece, TGameStatus, TGs, TGi> : Con
 
 
 	[HttpPost("lobby/create", Name = "CreateLobby")]
-	public async Task<Guid> CreateLobby()
+	public async Task<Guid> CreateLobby([FromQuery] bool isPrivate = true)
 	{
-		Lobby lobby = new Lobby(MaxPlayers, GameType);
+		Lobby lobby = new Lobby(MaxPlayers, GameType, isPrivate);
 		LobbyRegistry.Add(lobby);
 		return lobby.Id;
 	}
 
-	[Route("lobby/{lobbyId}/ws")]
+    [HttpPost("lobby/matchmake", Name = "Matchmake")]
+    public async Task<Guid> Matchmake()
+    {
+        var openLobby = LobbyRegistry.All(GameType)
+			.Where(lobby => !lobby.IsPrivate)
+            .FirstOrDefault(lobby => lobby.Players.Count < MaxPlayers);
+
+        var lobbyId = openLobby?.Id ?? await CreateLobby(false);
+        return lobbyId;
+    }
+
+    [Route("lobby/{lobbyId}/ws")]
 	[ApiExplorerSettings(IgnoreApi = true)]
 	public async Task JoinLobby(Guid lobbyId)
 	{
@@ -103,6 +114,13 @@ public abstract class GameController<TMove, TPiece, TGameStatus, TGs, TGi> : Con
 		var (lobby, user) = await GetLobbyUser(lobbyId);
 
 		return lobby.GetLobbyInformation();
+	}
+
+	[HttpPost("lobby/{lobbyId}/privacy", Name = "ChangeLobbyPrivacy")]
+	public async Task ChangeLobbyPrivacy(Guid lobbyId, [FromQuery] bool isPrivate)
+	{
+		var (lobby, user) = await GetLobbyUser(lobbyId);
+		lobby.ChangePrivacy(isPrivate);
 	}
 
 	[HttpGet("game/{gameId}/status", Name = "GetGameStatus")]
