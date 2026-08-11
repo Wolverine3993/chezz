@@ -72,6 +72,23 @@ const InfoRequest = z
     oldPassword: z.string().nullable(),
   })
   .partial();
+const NotificationResponse = z
+  .object({ title: z.string().nullable(), content: z.string().nullable() })
+  .partial();
+const NotificationRequest = z
+  .object({ content: z.string().nullable(), userId: z.string().nullable() })
+  .partial();
+const RelationshipRequest = z.object({ username: z.string().nullable() });
+const FriendResponse = z
+  .object({ username: z.string().nullable(), id: z.string().nullable() })
+  .partial();
+const PagedFriendResponse = z
+  .object({
+    friends: z.array(FriendResponse).nullable(),
+    page: z.number().int(),
+    friendCount: z.number().int(),
+  })
+  .partial();
 
 export const schemas = {
   LobbyInformation,
@@ -90,6 +107,11 @@ export const schemas = {
   ResetPasswordRequest,
   InfoResponse,
   InfoRequest,
+  NotificationResponse,
+  NotificationRequest,
+  RelationshipRequest,
+  FriendResponse,
+  PagedFriendResponse,
 };
 
 const endpoints = makeApi([
@@ -384,6 +406,88 @@ const endpoints = makeApi([
         status: 400,
         description: `Bad Request`,
         schema: z.record(z.array(z.string())),
+      },
+    ],
+  },
+  {
+    method: "get",
+    path: "/api/notificationList",
+    alias: "Notification_GetNotifications",
+    requestFormat: "json",
+    response: NotificationResponse,
+  },
+  {
+    method: "post",
+    path: "/api/notificationList/send",
+    alias: "Notification_SendNotification",
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "body",
+        type: "Body",
+        schema: NotificationRequest,
+      },
+    ],
+    response: z.void(),
+  },
+  {
+    method: "post",
+    path: "/api/relationship/add-friend",
+    alias: "UserRelationship_CreateRelationship",
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "body",
+        type: "Body",
+        schema: z.object({ username: z.string().nullable() }),
+      },
+    ],
+    response: z.void(),
+    errors: [
+      {
+        status: 404,
+        description: `Not Found`,
+        schema: z.void(),
+      },
+      {
+        status: 409,
+        description: `Conflict`,
+        schema: z.record(z.string()),
+      },
+    ],
+  },
+  {
+    method: "get",
+    path: "/api/relationship/get-friends",
+    alias: "UserRelationship_GetFriends",
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "page",
+        type: "Query",
+        schema: z.number().int().optional().default(0),
+      },
+    ],
+    response: PagedFriendResponse,
+  },
+  {
+    method: "delete",
+    path: "/api/relationship/remove-friend",
+    alias: "UserRelationship_RemoveFriend",
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "body",
+        type: "Body",
+        schema: z.object({ username: z.string().nullable() }),
+      },
+    ],
+    response: z.void(),
+    errors: [
+      {
+        status: 404,
+        description: `Not Found`,
+        schema: z.record(z.string()),
       },
     ],
   },
