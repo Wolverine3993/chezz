@@ -8,6 +8,7 @@ namespace Chezz.Database.EntityManagers
         public async Task AddNotificationAsync(Notification notification)
         {
             await _dbContext.AddAsync(notification);
+            await _dbContext.SaveChangesAsync();
         }
 
         public async Task<Notification?> GetNotificationAsync(ChezzUser user)

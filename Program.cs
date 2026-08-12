@@ -1,4 +1,3 @@
-
 using Chezz.Database;
 using Chezz.Database.EntityManagers;
 using Chezz.Database.Models;
@@ -29,6 +28,7 @@ namespace Chezz
 
 			builder.Services.AddDbContext<ChezzDbContext>(options => options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 			builder.Services.AddScoped<UserRelationshipManager>();
+			builder.Services.AddScoped<NotificationManager>();
 
 			builder.Services.AddSmtpConfiguration(builder.Configuration.GetRequiredSection("SmtpConfiguration"));
 			builder.Services.AddSingleton<IEmailSender, EmailSender>();

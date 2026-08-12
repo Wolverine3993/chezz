@@ -35,6 +35,7 @@ namespace Chezz.Controllers
                 Id = Guid.NewGuid().ToString(),
                 Content = request.Content,
                 Title = "Test Title",
+                UserId = request.UserId,
             };
 
             await _notificationManager.AddNotificationAsync(newNotification);
