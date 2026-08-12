@@ -8,6 +8,7 @@ namespace Chezz.Database
 	{
 		public ChezzDbContext(DbContextOptions<ChezzDbContext> options) : base(options) { }
 		public DbSet<UserRelationship> UserRelationships { get; set; }
+		public DbSet<Notification> Notifications { get; set; }
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
@@ -17,6 +18,9 @@ namespace Chezz.Database
 
 			modelBuilder.Entity<UserRelationship>()
 				.HasIndex(x => x.User1Id);
+
+			modelBuilder.Entity<Notification>()
+				.HasIndex(x => x.UserId);
 
 			base.OnModelCreating(modelBuilder);
 		}
