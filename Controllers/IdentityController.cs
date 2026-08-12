@@ -10,11 +10,9 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Options;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
-using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.RegularExpressions;
-using System.Timers;
 
 namespace Chezz.Controllers
 {
@@ -252,7 +250,7 @@ namespace Chezz.Controllers
         }
 
         [HttpGet("manage/info")]
-        public async Task<Results<Ok<InfoResponse>, ValidationProblem, UnauthorizedHttpResult>> GetInfo(
+        public async Task<Results<Ok<Chezz.Identity.InfoResponse>, ValidationProblem, UnauthorizedHttpResult>> GetInfo(
             [FromServices] IServiceProvider sp)
         {
             var claimsPrincipal = HttpContext.User;
@@ -266,7 +264,7 @@ namespace Chezz.Controllers
         }
 
         [HttpPost("manage/info")]
-        public async Task<Results<Ok<InfoResponse>, BadRequest<Dictionary<string, string[]>>, NotFound>> PostInfo(
+        public async Task<Results<Ok<Chezz.Identity.InfoResponse>, BadRequest<Dictionary<string, string[]>>, NotFound>> PostInfo(
             [FromBody] InfoRequest infoRequest,
             [FromServices] IServiceProvider sp)
         {
@@ -377,11 +375,12 @@ namespace Chezz.Controllers
             return TypedResults.BadRequest(errorDictionary);
         }
 
-        private static async Task<InfoResponse> CreateInfoResponseAsync<TUser>(TUser user, UserManager<TUser> userManager)
+        private static async Task<Chezz.Identity.InfoResponse> CreateInfoResponseAsync<TUser>(TUser user, UserManager<TUser> userManager)
             where TUser : class
         {
             return new()
             {
+                Username = await userManager.GetUserNameAsync(user) ?? throw new NotSupportedException("Users must have a username."),
                 Email = await userManager.GetEmailAsync(user) ?? throw new NotSupportedException("Users must have an email."),
                 IsEmailConfirmed = await userManager.IsEmailConfirmedAsync(user),
             };
