@@ -61,10 +61,13 @@ const ResetPasswordRequest = z.object({
   resetCode: z.string().nullable(),
   newPassword: z.string().nullable(),
 });
-const InfoResponse = z.object({
-  email: z.string().nullable(),
-  isEmailConfirmed: z.boolean(),
-});
+const InfoResponse = z
+  .object({
+    username: z.string().nullable(),
+    email: z.string().nullable(),
+    isEmailConfirmed: z.boolean(),
+  })
+  .partial();
 const InfoRequest = z
   .object({
     newEmail: z.string().nullable(),
@@ -297,6 +300,13 @@ const endpoints = makeApi([
         schema: z.boolean().optional(),
       },
     ],
+    response: AccessTokenResponse,
+  },
+  {
+    method: "post",
+    path: "/api/identity/logout",
+    alias: "Identity_Logout",
+    requestFormat: "json",
     response: AccessTokenResponse,
   },
   {

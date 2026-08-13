@@ -69,6 +69,7 @@ public abstract class GameController<TMove, TPiece, TGameStatus, TGs, TGi> : Con
     {
         var openLobby = LobbyRegistry.All(GameType)
 			.Where(lobby => !lobby.IsPrivate)
+			.OrderByDescending(lobby => lobby.Players.Count)
             .FirstOrDefault(lobby => lobby.Players.Count < MaxPlayers);
 
         var lobbyId = openLobby?.Id ?? await CreateLobby(false);

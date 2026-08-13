@@ -26,13 +26,12 @@
                 </h2>
             </div>
 
-            <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-                <form class="space-y-6" action="#" method="POST">
                     <div>
                         <label for="lobby" class="block text-sm/6 font-medium text-gray-100">Lobby ID</label>
                         <div class="mt-2">
                             <input type="text" name="lobby" id="lobby" required
                                 placeholder="d5ece5ba-a2a4-43cf-9d16-b04c8893769a"
+                                v-model="lobbyId"
                                 class="block w-full rounded-md bg-white/5 px-3 py-1.5 text-base text-white outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-500 sm:text-sm/6" />
                         </div>
                     </div>
@@ -40,12 +39,12 @@
                         <ChezzButton>Join Lobby</ChezzButton>
                     </div>
                 </form>
-            </div>
-        </form>
     </div>
 </template>
 
 <script setup lang="ts">
+import { ZodError } from 'zod';
+
 type ChessState = "waiting" | "lobby" | "game";
 
 
@@ -65,8 +64,19 @@ async function createLobby() {
     createLobbyLoading.value = true;
 }
 
-const lobbyId = ref("");
+const lobbyId = ref();
 async function joinLobby(){
-    router.push(`/chess/game/${lobbyId.value}`);
+    const uuidRegex = /^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$/
+    if(!uuidRegex.test(lobbyId.value)) {
+        console.log("Invalid UUID");
+        return;
+    }
+
+    try {
+        await api.Chess_GetLobbyStatus({params: {lobbyId: lobbyId.value}});
+        router.push(`/chess/game/${lobbyId.value}`);
+    } catch (e) {
+        console.log("Lobby not found");
+    }
 }
 </script>

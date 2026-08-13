@@ -106,6 +106,16 @@ namespace Chezz.Controllers
             return TypedResults.Empty;
         }
 
+        [HttpPost("logout", Name = "Logout")]
+        public async Task<Results<Ok<AccessTokenResponse>, EmptyHttpResult, ProblemHttpResult>> Logout([FromServices] IServiceProvider sp)
+        {
+            var user = await userManager.GetUserAsync(HttpContext.User);
+            var signInManager = sp.GetService<SignInManager<ChezzUser>>();
+            await signInManager!.SignOutAsync();
+
+            return TypedResults.Empty;
+        }
+
         [HttpPost("refresh", Name = "Refresh")]
         public async Task<Results<Ok<AccessTokenResponse>, UnauthorizedHttpResult, SignInHttpResult, ChallengeHttpResult>> Refresh(
             [FromBody] RefreshRequest refreshRequest,
@@ -159,14 +169,7 @@ namespace Chezz.Controllers
             }
             else
             {
-                // As with Identity UI, email and user name are one and the same. So when we update the email,
-                // we need to update the user name.
                 result = await userManager.ChangeEmailAsync(user, changedEmail, code);
-
-                if (result.Succeeded)
-                {
-                    result = await userManager.SetUserNameAsync(user, changedEmail);
-                }
             }
 
             if (!result.Succeeded)
@@ -249,7 +252,7 @@ namespace Chezz.Controllers
         }
 
         [HttpGet("manage/info")]
-        public async Task<Results<Ok<InfoResponse>, ValidationProblem, UnauthorizedHttpResult>> GetInfo(
+        public async Task<Results<Ok<Chezz.Identity.InfoResponse>, ValidationProblem, UnauthorizedHttpResult>> GetInfo(
             [FromServices] IServiceProvider sp)
         {
             var claimsPrincipal = HttpContext.User;
@@ -263,7 +266,7 @@ namespace Chezz.Controllers
         }
 
         [HttpPost("manage/info")]
-        public async Task<Results<Ok<InfoResponse>, BadRequest<Dictionary<string, string[]>>, NotFound>> PostInfo(
+        public async Task<Results<Ok<Chezz.Identity.InfoResponse>, BadRequest<Dictionary<string, string[]>>, NotFound>> PostInfo(
             [FromBody] InfoRequest infoRequest,
             [FromServices] IServiceProvider sp)
         {
@@ -374,11 +377,12 @@ namespace Chezz.Controllers
             return TypedResults.BadRequest(errorDictionary);
         }
 
-        private static async Task<InfoResponse> CreateInfoResponseAsync<TUser>(TUser user, UserManager<TUser> userManager)
+        private static async Task<Chezz.Identity.InfoResponse> CreateInfoResponseAsync<TUser>(TUser user, UserManager<TUser> userManager)
             where TUser : class
         {
             return new()
             {
+                Username = await userManager.GetUserNameAsync(user) ?? throw new NotSupportedException("Users must have a username."),
                 Email = await userManager.GetEmailAsync(user) ?? throw new NotSupportedException("Users must have an email."),
                 IsEmailConfirmed = await userManager.IsEmailConfirmedAsync(user),
             };
