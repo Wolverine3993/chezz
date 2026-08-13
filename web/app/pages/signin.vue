@@ -127,11 +127,13 @@ const password = ref();
 const loading = ref(false);
 
 const user = useUser();
+const router = useRouter();
 
 async function signin() {
     loading.value = true;
     try {
         await user.login({ username: username.value, password: password.value });
+        router.push("/");
     } catch (e) {
         console.error(e);
     }

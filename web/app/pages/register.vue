@@ -111,13 +111,15 @@ const email = ref();
 const password = ref();
 const loading = ref(false);
 
+const user = useUser();
 const router = useRouter();
 
 async function signin() {
     loading.value = true;
     try {
         await api.Identity_Register({ username: username.value, email: email.value, password: password.value });
-        router.push("/signin");
+        await user.login({ username: username.value, password: password.value });
+        router.push("/");
     } catch(e) {
         console.error(e);
     }

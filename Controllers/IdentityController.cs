@@ -107,6 +107,16 @@ namespace Chezz.Controllers
             return TypedResults.Empty;
         }
 
+        [HttpPost("logout", Name = "Logout")]
+        public async Task<Results<Ok<AccessTokenResponse>, EmptyHttpResult, ProblemHttpResult>> Logout([FromServices] IServiceProvider sp)
+        {
+            var user = await userManager.GetUserAsync(HttpContext.User);
+            var signInManager = sp.GetService<SignInManager<ChezzUser>>();
+            await signInManager!.SignOutAsync();
+
+            return TypedResults.Empty;
+        }
+
         [HttpPost("refresh", Name = "Refresh")]
         public async Task<Results<Ok<AccessTokenResponse>, UnauthorizedHttpResult, SignInHttpResult, ChallengeHttpResult>> Refresh(
             [FromBody] RefreshRequest refreshRequest,
@@ -160,14 +170,7 @@ namespace Chezz.Controllers
             }
             else
             {
-                // As with Identity UI, email and user name are one and the same. So when we update the email,
-                // we need to update the user name.
                 result = await userManager.ChangeEmailAsync(user, changedEmail, code);
-
-                if (result.Succeeded)
-                {
-                    result = await userManager.SetUserNameAsync(user, changedEmail);
-                }
             }
 
             if (!result.Succeeded)

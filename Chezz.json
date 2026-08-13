@@ -446,6 +446,26 @@
         }
       }
     },
+    "/api/identity/logout": {
+      "post": {
+        "tags": [
+          "Identity"
+        ],
+        "operationId": "Identity_Logout",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccessTokenResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/identity/refresh": {
       "post": {
         "tags": [
@@ -919,12 +939,12 @@
         "additionalProperties": false
       },
       "InfoResponse": {
-        "required": [
-          "email",
-          "isEmailConfirmed"
-        ],
         "type": "object",
         "properties": {
+          "username": {
+            "type": "string",
+            "nullable": true
+          },
           "email": {
             "type": "string",
             "nullable": true
