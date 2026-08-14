@@ -4,7 +4,7 @@
       <div class="relative flex h-16 items-center justify-between grid grid-cols-3">
         <div class="col-1" />
         <div class="flex flex-1 items-center justify-center sm:items-stretch col-2">
-          <div class="flex shrink-0 items-center">
+          <div @click="router.push('/')" class="flex shrink-0 items-center hover:cursor-pointer">
             <h1 class="font-bold text-xl dark:text-white m-1 select-none">Chezz</h1>
             <ChezzLogo class="h-8 w-auto text-blue-600" />
           </div>

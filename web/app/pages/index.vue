@@ -3,7 +3,10 @@
         <Navbar />
         <h1 class="text-white">{{ username }}</h1>
         <h1 class="text-white">Hello there</h1>
-        <button @click="matchmake" type="button" class="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-indigo-500 dark:shadow-none dark:hover:bg-indigo-400 dark:focus-visible:outline-indigo-500">Matchmake</button>
+        <button @click="matchmake" type="button" class="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-indigo-500 dark:shadow-none dark:hover:bg-indigo-400 dark:focus-visible:outline-indigo-500">Matchmake</button><br>
+        <button @click="notification.pollNotifications" type="button" class="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-indigo-500 dark:shadow-none dark:hover:bg-indigo-400 dark:focus-visible:outline-indigo-500">Get Notifications</button>
+
+        <Notification ref="notification" />
     </div>
 </template>
 
@@ -20,6 +23,7 @@ api.Identity_GetInfo(undefined)
     username.value = "Not authorized";
 });
 
+const notification = ref();
 const router = useRouter();
 function matchmake() {
     api.Chess_Matchmake(undefined)
@@ -28,11 +32,4 @@ function matchmake() {
     });
 }
 
-const notifText = ref("Not received...");
-
-async function pollNotifications() {
-    let notification = await api.Notification_GetNotifications();
-    notifText.value = notification.content ?? "Null value";
-}
-setTimeout
 </script>
