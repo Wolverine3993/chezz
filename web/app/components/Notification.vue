@@ -45,13 +45,16 @@ const content = computed(() => notification.value?.content);
 const show = ref(false);
 
 async function pollNotifications() {
-    try {
-        notification.value = await api.Notification_GetNotifications(undefined);
-        show.value = true;
-    }
-    catch {
-        // ...
-    }
+  if (show.value === true) {
+    return setTimeout(() => pollNotifications(), 1000);
+  }
+  try {
+      notification.value = await api.Notification_GetNotifications(undefined);
+      show.value = true;
+  }
+  catch {
+      // ...
+  }
 }
 
 async function acceptRequest() {
