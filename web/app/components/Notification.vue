@@ -14,8 +14,8 @@
                 <p class="text-sm font-medium text-gray-900 dark:text-white">{{ title }}</p>
                 <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ content }}</p>
                 <div class="mt-3 flex space-x-7">
-                  <button type="button" class="rounded-md text-sm font-medium text-indigo-600 hover:text-indigo-500 focus:outline-2 focus:outline-offset-2 focus:outline-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300 dark:focus:outline-indigo-400">Accept</button>
-                  <button type="button" class="rounded-md text-sm font-medium text-gray-700 hover:text-gray-500 focus:outline-2 focus:outline-offset-2 focus:outline-indigo-500 dark:text-gray-300 dark:hover:text-white dark:focus:outline-indigo-400">Decline</button>
+                  <button @click="acceptRequest" type="button" class="rounded-md text-sm font-medium text-indigo-600 hover:text-indigo-500 focus:outline-2 focus:outline-offset-2 focus:outline-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300 dark:focus:outline-indigo-400">Accept</button>
+                  <button @click="declineRequest" type="button" class="rounded-md text-sm font-medium text-gray-700 hover:text-gray-500 focus:outline-2 focus:outline-offset-2 focus:outline-indigo-500 dark:text-gray-300 dark:hover:text-white dark:focus:outline-indigo-400">Decline</button>
                 </div>
               </div>
               <div class="ml-4 flex shrink-0">
@@ -42,6 +42,8 @@ const notification = ref();
 const title = computed(() => notification.value?.title);
 const content = computed(() => notification.value?.content);
 
+const show = ref(false);
+
 async function pollNotifications() {
     try {
         notification.value = await api.Notification_GetNotifications(undefined);
@@ -51,7 +53,24 @@ async function pollNotifications() {
         // ...
     }
 }
-const show = ref(false);
+
+async function acceptRequest() {
+  show.value = false;
+  if (notification.value.notificationType == 0) {
+    await api.UserRelationship_AcceptFriendRequest({
+      requestId: notification.value.callbackId
+    });
+  }
+}
+
+async function declineRequest() {
+  show.value = false;
+  if (notification.value.notificationType == 0) {
+    await api.UserRelationship_DeclineFriendRequest({
+      requestId: notification.value.callbackId
+    });
+  }
+}
 
 defineExpose({
     pollNotifications

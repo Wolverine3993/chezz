@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Org.BouncyCastle.Asn1.Ocsp;
+using System.Runtime.Intrinsics.X86;
 
 namespace Chezz.Controllers
 {
@@ -41,9 +42,7 @@ namespace Chezz.Controllers
 
             if (await _userRelationshipManager.FriendRequestExistsAsync(user2, user1))
             {
-                await _userRelationshipManager.AddUserRelationshipAsync(user1, user2);
-                await _userRelationshipManager.AddUserRelationshipAsync(user2, user1);
-
+                await _userRelationshipManager.MakeFriendsAsync(user1, user2);
                 await _userRelationshipManager.RemoveFriendRequestAsync(user2, user1);
 
                 return TypedResults.Ok();
@@ -121,6 +120,33 @@ namespace Chezz.Controllers
             }
 
             await _userRelationshipManager.RemoveFriendRequestAsync(request.RequestId);
+
+            return TypedResults.Ok();
+        }
+
+        [HttpPost("accept-friend-request")]
+        public async Task<Results<Ok, UnauthorizedHttpResult, NotFound>> AcceptFriendRequest([FromBody] FriendAcceptRequest request)
+        {
+            var user = await _userManager.GetUserAsync(HttpContext.User);
+            if (user is null)
+            {
+                return TypedResults.Unauthorized();
+            }
+
+            var friendRequest = await _userRelationshipManager.GetFriendRequestByIdAsync(request.RequestId);
+
+            if (friendRequest is null)
+            {
+                return TypedResults.NotFound();
+            }
+
+            if (friendRequest.UserFrom == user)
+            {
+                return TypedResults.Unauthorized();
+            }
+
+            await _userRelationshipManager.MakeFriendsAsync(friendRequest.UserFrom, friendRequest.UserTo);
+            await _userRelationshipManager.RemoveFriendRequestAsync(friendRequest.Id);
 
             return TypedResults.Ok();
         }

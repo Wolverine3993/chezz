@@ -6,7 +6,7 @@ namespace Chezz.Database.EntityManagers
 {
     public class UserRelationshipManager(ChezzDbContext _dbContext)
     {
-        public async Task<bool> AddUserRelationshipAsync(ChezzUser user1, ChezzUser user2)
+        async Task AddUserRelationshipAsync(ChezzUser user1, ChezzUser user2)
         {
             var newRelationship = new UserRelationship
             {
@@ -22,10 +22,22 @@ namespace Chezz.Database.EntityManagers
             }
             catch
             {
-                return false;
+                // ...
             }
+        }
 
-            return true;
+        public async Task<FriendRequest?> GetFriendRequestByIdAsync(string requestId)
+        {
+            return await _dbContext.FriendRequests
+                .Include(request => request.UserFrom)
+                .Include(request => request.UserTo)
+                .FirstOrDefaultAsync(request => request.Id == requestId);
+        }
+
+        public async Task MakeFriendsAsync(ChezzUser user1, ChezzUser user2)
+        {
+            await AddUserRelationshipAsync(user1, user2);
+            await AddUserRelationshipAsync(user2, user1);
         }
 
         public async Task<bool> AreFriendsAsync(ChezzUser user1, ChezzUser user2)
@@ -125,7 +137,7 @@ namespace Chezz.Database.EntityManagers
 
         public async Task RemoveFriendRequestAsync(string requestId)
         {
-            var requestToRemove = _dbContext.FriendRequests
+            var requestToRemove = await _dbContext.FriendRequests
                 .Where(request => request.Id == requestId)
                 .FirstOrDefaultAsync();
 

@@ -82,21 +82,43 @@ const Notification = z.object({
   notificationType: NotificationType.optional(),
   title: z.string().nullish(),
   content: z.string().nullish(),
-  callbackId: z.string().uuid().optional(),
+  callbackId: z.string().nullish(),
 });
-const NotificationRequest = z
-  .object({ content: z.string().nullable(), userId: z.string().nullable() })
-  .partial();
 const RelationshipRequest = z.object({ username: z.string().nullable() });
 const FriendResponse = z
   .object({ username: z.string().nullable(), id: z.string().nullable() })
   .partial();
-const PagedFriendResponse = z
+const ChezzUser = z
   .object({
-    friends: z.array(FriendResponse).nullable(),
-    page: z.number().int(),
-    friendCount: z.number().int(),
+    id: z.string().nullable(),
+    userName: z.string().nullable(),
+    normalizedUserName: z.string().nullable(),
+    email: z.string().nullable(),
+    normalizedEmail: z.string().nullable(),
+    emailConfirmed: z.boolean(),
+    passwordHash: z.string().nullable(),
+    securityStamp: z.string().nullable(),
+    concurrencyStamp: z.string().nullable(),
+    phoneNumber: z.string().nullable(),
+    phoneNumberConfirmed: z.boolean(),
+    twoFactorEnabled: z.boolean(),
+    lockoutEnd: z.string().datetime({ offset: true }).nullable(),
+    lockoutEnabled: z.boolean(),
+    accessFailedCount: z.number().int(),
   })
+  .partial();
+const FriendRequest = z.object({
+  id: z.string().nullable(),
+  userFromId: z.string().nullish(),
+  userFrom: ChezzUser.optional(),
+  userToId: z.string().nullish(),
+  userTo: ChezzUser.optional(),
+});
+const FriendDeclineRequest = z
+  .object({ requestId: z.string().nullable() })
+  .partial();
+const FriendAcceptRequest = z
+  .object({ requestId: z.string().nullable() })
   .partial();
 
 export const schemas = {
@@ -118,10 +140,12 @@ export const schemas = {
   InfoRequest,
   NotificationType,
   Notification,
-  NotificationRequest,
   RelationshipRequest,
   FriendResponse,
-  PagedFriendResponse,
+  ChezzUser,
+  FriendRequest,
+  FriendDeclineRequest,
+  FriendAcceptRequest,
 };
 
 const endpoints = makeApi([
@@ -442,22 +466,29 @@ const endpoints = makeApi([
   },
   {
     method: "post",
-    path: "/api/notificationList/send",
-    alias: "Notification_SendNotification",
+    path: "/api/relationship/accept-friend-request",
+    alias: "UserRelationship_AcceptFriendRequest",
     requestFormat: "json",
     parameters: [
       {
         name: "body",
         type: "Body",
-        schema: NotificationRequest,
+        schema: z.object({ requestId: z.string().nullable() }).partial(),
       },
     ],
     response: z.void(),
+    errors: [
+      {
+        status: 404,
+        description: `Not Found`,
+        schema: z.void(),
+      },
+    ],
   },
   {
     method: "post",
     path: "/api/relationship/add-friend",
-    alias: "UserRelationship_CreateRelationship",
+    alias: "UserRelationship_AddFriendRequest",
     requestFormat: "json",
     parameters: [
       {
@@ -476,23 +507,37 @@ const endpoints = makeApi([
       {
         status: 409,
         description: `Conflict`,
-        schema: z.record(z.string()),
+        schema: z.string(),
       },
     ],
+  },
+  {
+    method: "post",
+    path: "/api/relationship/decline-friend-request",
+    alias: "UserRelationship_DeclineFriendRequest",
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "body",
+        type: "Body",
+        schema: z.object({ requestId: z.string().nullable() }).partial(),
+      },
+    ],
+    response: z.void(),
+  },
+  {
+    method: "get",
+    path: "/api/relationship/get-friend-requests",
+    alias: "UserRelationship_GetFriendRequests",
+    requestFormat: "json",
+    response: z.array(FriendRequest),
   },
   {
     method: "get",
     path: "/api/relationship/get-friends",
     alias: "UserRelationship_GetFriends",
     requestFormat: "json",
-    parameters: [
-      {
-        name: "page",
-        type: "Query",
-        schema: z.number().int().optional().default(0),
-      },
-    ],
-    response: PagedFriendResponse,
+    response: z.array(FriendResponse),
   },
   {
     method: "delete",
