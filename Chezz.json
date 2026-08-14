@@ -772,44 +772,12 @@
         }
       }
     },
-    "/api/notificationList/send": {
-      "post": {
-        "tags": [
-          "Notification"
-        ],
-        "operationId": "Notification_SendNotification",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NotificationRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NotificationRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/NotificationRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
     "/api/relationship/add-friend": {
       "post": {
         "tags": [
           "UserRelationship"
         ],
-        "operationId": "UserRelationship_CreateRelationship",
+        "operationId": "UserRelationship_AddFriendRequest",
         "requestBody": {
           "content": {
             "application/json": {
@@ -838,10 +806,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "additionalProperties": {
-                    "type": "string"
-                  }
+                  "type": "string"
                 }
               }
             }
@@ -858,24 +823,16 @@
           "UserRelationship"
         ],
         "operationId": "UserRelationship_GetFriends",
-        "parameters": [
-          {
-            "name": "page",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32",
-              "default": 0
-            }
-          }
-        ],
         "responses": {
           "200": {
             "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PagedFriendResponse"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FriendResponse"
+                  }
                 }
               }
             }
@@ -920,6 +877,29 @@
                   "type": "object",
                   "additionalProperties": {
                     "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/relationship/get-friend-requests": {
+      "get": {
+        "tags": [
+          "UserRelationship"
+        ],
+        "operationId": "UserRelationship_GetFriendRequests",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FriendRequest"
                   }
                 }
               }
@@ -1049,6 +1029,69 @@
         },
         "additionalProperties": false
       },
+      "ChezzUser": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "userName": {
+            "type": "string",
+            "nullable": true
+          },
+          "normalizedUserName": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "normalizedEmail": {
+            "type": "string",
+            "nullable": true
+          },
+          "emailConfirmed": {
+            "type": "boolean"
+          },
+          "passwordHash": {
+            "type": "string",
+            "nullable": true
+          },
+          "securityStamp": {
+            "type": "string",
+            "nullable": true
+          },
+          "concurrencyStamp": {
+            "type": "string",
+            "nullable": true
+          },
+          "phoneNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "phoneNumberConfirmed": {
+            "type": "boolean"
+          },
+          "twoFactorEnabled": {
+            "type": "boolean"
+          },
+          "lockoutEnd": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "lockoutEnabled": {
+            "type": "boolean"
+          },
+          "accessFailedCount": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
       "ForgotPasswordRequest": {
         "required": [
           "email"
@@ -1058,6 +1101,33 @@
           "email": {
             "type": "string",
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "FriendRequest": {
+        "required": [
+          "id"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "userFromId": {
+            "type": "string",
+            "nullable": true
+          },
+          "userFrom": {
+            "$ref": "#/components/schemas/ChezzUser"
+          },
+          "userToId": {
+            "type": "string",
+            "nullable": true
+          },
+          "userTo": {
+            "$ref": "#/components/schemas/ChezzUser"
           }
         },
         "additionalProperties": false
@@ -1214,20 +1284,6 @@
           },
           "callbackId": {
             "type": "string",
-            "format": "uuid"
-          }
-        },
-        "additionalProperties": false
-      },
-      "NotificationRequest": {
-        "type": "object",
-        "properties": {
-          "content": {
-            "type": "string",
-            "nullable": true
-          },
-          "userId": {
-            "type": "string",
             "nullable": true
           }
         },
@@ -1240,27 +1296,6 @@
         ],
         "type": "integer",
         "format": "int32"
-      },
-      "PagedFriendResponse": {
-        "type": "object",
-        "properties": {
-          "friends": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/FriendResponse"
-            },
-            "nullable": true
-          },
-          "page": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "friendCount": {
-            "type": "integer",
-            "format": "int32"
-          }
-        },
-        "additionalProperties": false
       },
       "PieceColor": {
         "enum": [

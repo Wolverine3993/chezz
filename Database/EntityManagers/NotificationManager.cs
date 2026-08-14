@@ -5,10 +5,24 @@ namespace Chezz.Database.EntityManagers
 {
     public class NotificationManager(ChezzDbContext _dbContext)
     {
-        public async Task AddNotificationAsync(Notification notification)
+        async Task AddNotificationAsync(Notification notification)
         {
             await _dbContext.AddAsync(notification);
             await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task AddFriendNotificationAsync(ChezzUser userTo, ChezzUser userFrom)
+        {
+            var newNotification = new Notification
+            {
+                Id = Guid.NewGuid().ToString(),
+                UserId = userTo.Id,
+                Title = "Friend Request",
+                Content = $"You have recieved a friend request from {userFrom.UserName}.",
+                CallbackId = userFrom.Id,
+            };
+
+            await AddNotificationAsync(newNotification);
         }
 
         public async Task<Notification?> GetNotificationAsync(ChezzUser user)

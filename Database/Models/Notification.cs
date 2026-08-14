@@ -15,6 +15,6 @@ namespace Chezz.Database.Models
         public NotificationType NotificationType { get; set; }
         public string Title { get; set; }
         public string Content { get; set; }
-        public Guid CallbackId { get; set; }
+        public string CallbackId { get; set; }
     }
 }
