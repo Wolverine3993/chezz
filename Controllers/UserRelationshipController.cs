@@ -15,6 +15,37 @@ namespace Chezz.Controllers
         UserRelationshipManager _userRelationshipManager,
         UserManager<ChezzUser> _userManager) : ControllerBase
     {
+        [HttpGet("get-friends")]
+        public async Task<Results<Ok<IEnumerable<FriendResponse>>, UnauthorizedHttpResult>> GetFriends()
+        {
+            var user = await _userManager.GetUserAsync(HttpContext.User);
+            if (user is null)
+            {
+                return TypedResults.Unauthorized();
+            }
+
+            var relationships = await _userRelationshipManager.GetUserRelationshipsAsync(user);
+            var friends = relationships.Select(relationship => new FriendResponse
+            {
+                Username = relationship.User2.UserName,
+                Id = relationship.User2.Id
+            });
+
+            return TypedResults.Ok(friends);
+        }
+
+        [HttpGet("get-friend-requests")]
+        public async Task<Results<Ok<IEnumerable<FriendRequest>>, UnauthorizedHttpResult>> GetFriendRequests()
+        {
+            var user = await _userManager.GetUserAsync(HttpContext.User);
+            if (user is null)
+            {
+                return TypedResults.Unauthorized();
+            }
+
+            return TypedResults.Ok(await _userRelationshipManager.GetFriendRequestsAsync(user));
+        }
+
         [HttpPost("add-friend")]
         public async Task<Results<Ok, Conflict<string>, UnauthorizedHttpResult, NotFound>> AddFriendRequest([FromBody] RelationshipRequest request)
         {
@@ -57,73 +88,6 @@ namespace Chezz.Controllers
             return TypedResults.Ok();
         }
 
-        [HttpGet("get-friends")]
-        public async Task<Results<Ok<IEnumerable<FriendResponse>>, UnauthorizedHttpResult>> GetFriends()
-        {
-            var user = await _userManager.GetUserAsync(HttpContext.User);
-            if (user is null)
-            {
-                return TypedResults.Unauthorized();
-            }
-
-            var relationships = await _userRelationshipManager.GetUserRelationshipsAsync(user);
-            var friends = relationships.Select(relationship => new FriendResponse
-            {
-                Username = relationship.User2.UserName,
-                Id = relationship.User2.Id
-            });
-
-            return TypedResults.Ok(friends);
-        }
-
-        [HttpDelete("remove-friend")]
-        public async Task<Results<Ok, UnauthorizedHttpResult, NotFound<Dictionary<string, string>>>> RemoveFriend([FromBody] RelationshipRequest request)
-        {
-            var user1 = await _userManager.GetUserAsync(HttpContext.User);
-            if (user1 is null)
-            {
-                return TypedResults.Unauthorized();
-            }
-
-            var user2 = await _userManager.FindByNameAsync(request.Username);
-            if (user2 is null)
-            {
-                return TypedResults.NotFound(new Dictionary<string, string>
-                {
-                    { "reason", $"Cannot find user with username {request.Username}"}
-                });
-            }
-
-            await _userRelationshipManager.RemoveUserRelationshipAsync(user1, user2);
-            return TypedResults.Ok();
-        }
-
-        [HttpGet("get-friend-requests")]
-        public async Task<Results<Ok<IEnumerable<FriendRequest>>, UnauthorizedHttpResult>> GetFriendRequests()
-        {
-            var user = await _userManager.GetUserAsync(HttpContext.User);
-            if (user is null)
-            {
-                return TypedResults.Unauthorized();
-            }
-
-            return TypedResults.Ok(await _userRelationshipManager.GetFriendRequestsAsync(user));
-        }
-
-        [HttpPost("decline-friend-request")]
-        public async Task<Results<Ok, UnauthorizedHttpResult>> DeclineFriendRequest([FromBody] FriendDeclineRequest request)
-        {
-            var user = await _userManager.GetUserAsync(HttpContext.User);
-            if (user is null)
-            {
-                return TypedResults.Unauthorized();
-            }
-
-            await _userRelationshipManager.RemoveFriendRequestAsync(request.RequestId);
-
-            return TypedResults.Ok();
-        }
-
         [HttpPost("accept-friend-request")]
         public async Task<Results<Ok, UnauthorizedHttpResult, NotFound>> AcceptFriendRequest([FromBody] FriendAcceptRequest request)
         {
@@ -148,6 +112,42 @@ namespace Chezz.Controllers
             await _userRelationshipManager.MakeFriendsAsync(friendRequest.UserFrom, friendRequest.UserTo);
             await _userRelationshipManager.RemoveFriendRequestAsync(friendRequest.Id);
 
+            return TypedResults.Ok();
+        }
+
+        [HttpPost("decline-friend-request")]
+        public async Task<Results<Ok, UnauthorizedHttpResult>> DeclineFriendRequest([FromBody] FriendDeclineRequest request)
+        {
+            var user = await _userManager.GetUserAsync(HttpContext.User);
+            if (user is null)
+            {
+                return TypedResults.Unauthorized();
+            }
+
+            await _userRelationshipManager.RemoveFriendRequestAsync(request.RequestId);
+
+            return TypedResults.Ok();
+        }
+
+        [HttpDelete("remove-friend")]
+        public async Task<Results<Ok, UnauthorizedHttpResult, NotFound<Dictionary<string, string>>>> RemoveFriend([FromBody] RelationshipRequest request)
+        {
+            var user1 = await _userManager.GetUserAsync(HttpContext.User);
+            if (user1 is null)
+            {
+                return TypedResults.Unauthorized();
+            }
+
+            var user2 = await _userManager.FindByNameAsync(request.Username);
+            if (user2 is null)
+            {
+                return TypedResults.NotFound(new Dictionary<string, string>
+                {
+                    { "reason", $"Cannot find user with username {request.Username}"}
+                });
+            }
+
+            await _userRelationshipManager.RemoveUserRelationshipAsync(user1, user2);
             return TypedResults.Ok();
         }
     }

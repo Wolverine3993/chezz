@@ -49,11 +49,11 @@ async function pollNotifications() {
     return setTimeout(() => pollNotifications(), 1000);
   }
   try {
-      notification.value = await api.Notification_GetNotifications(undefined);
-      show.value = true;
+    notification.value = await api.Notification_GetNotifications(undefined);
+    show.value = true;
   }
   catch {
-      // ...
+    // ...
   }
 }
 
