@@ -75,9 +75,15 @@ const InfoRequest = z
     oldPassword: z.string().nullable(),
   })
   .partial();
-const NotificationResponse = z
-  .object({ title: z.string().nullable(), content: z.string().nullable() })
-  .partial();
+const NotificationType = z.union([z.literal(0), z.literal(1)]);
+const Notification = z.object({
+  id: z.string().nullable(),
+  userId: z.string().nullish(),
+  notificationType: NotificationType.optional(),
+  title: z.string().nullish(),
+  content: z.string().nullish(),
+  callbackId: z.string().uuid().optional(),
+});
 const NotificationRequest = z
   .object({ content: z.string().nullable(), userId: z.string().nullable() })
   .partial();
@@ -110,7 +116,8 @@ export const schemas = {
   ResetPasswordRequest,
   InfoResponse,
   InfoRequest,
-  NotificationResponse,
+  NotificationType,
+  Notification,
   NotificationRequest,
   RelationshipRequest,
   FriendResponse,
@@ -424,7 +431,14 @@ const endpoints = makeApi([
     path: "/api/notificationList",
     alias: "Notification_GetNotifications",
     requestFormat: "json",
-    response: NotificationResponse,
+    response: Notification,
+    errors: [
+      {
+        status: 404,
+        description: `Not Found`,
+        schema: z.void(),
+      },
+    ],
   },
   {
     method: "post",

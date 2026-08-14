@@ -13,7 +13,7 @@ namespace Chezz.Controllers
     {
 
         [HttpGet]
-        public async Task<Results<Ok, Ok<Notification>, UnauthorizedHttpResult>> GetNotifications()
+        public async Task<Results<Ok<Notification>, NotFound, UnauthorizedHttpResult>> GetNotifications()
         {
             var user = await _userManager.GetUserAsync(HttpContext.User);
             if (user == null)
@@ -22,7 +22,7 @@ namespace Chezz.Controllers
             }
             
             var earliestNotification = await _notificationManager.GetNotificationAsync(user);
-            if (earliestNotification is null) return TypedResults.Ok();
+            if (earliestNotification is null) return TypedResults.NotFound();
 
             return TypedResults.Ok(earliestNotification);
         }

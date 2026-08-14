@@ -11,11 +11,11 @@
                 <InboxIcon class="size-6 text-gray-400" aria-hidden="true" />
               </div>
               <div class="ml-3 w-0 flex-1 pt-0.5">
-                <p class="text-sm font-medium text-gray-900 dark:text-white">{{ props.type }}</p>
+                <p class="text-sm font-medium text-gray-900 dark:text-white">{{ title }}</p>
                 <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ content }}</p>
                 <div class="mt-3 flex space-x-7">
-                  <button type="button" class="rounded-md text-sm font-medium text-indigo-600 hover:text-indigo-500 focus:outline-2 focus:outline-offset-2 focus:outline-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300 dark:focus:outline-indigo-400">Undo</button>
-                  <button type="button" class="rounded-md text-sm font-medium text-gray-700 hover:text-gray-500 focus:outline-2 focus:outline-offset-2 focus:outline-indigo-500 dark:text-gray-300 dark:hover:text-white dark:focus:outline-indigo-400">Dismiss</button>
+                  <button type="button" class="rounded-md text-sm font-medium text-indigo-600 hover:text-indigo-500 focus:outline-2 focus:outline-offset-2 focus:outline-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300 dark:focus:outline-indigo-400">Accept</button>
+                  <button type="button" class="rounded-md text-sm font-medium text-gray-700 hover:text-gray-500 focus:outline-2 focus:outline-offset-2 focus:outline-indigo-500 dark:text-gray-300 dark:hover:text-white dark:focus:outline-indigo-400">Decline</button>
                 </div>
               </div>
               <div class="ml-4 flex shrink-0">
@@ -37,17 +37,23 @@ import { ref } from 'vue'
 import { InboxIcon } from '@heroicons/vue/24/outline'
 import { XMarkIcon } from '@heroicons/vue/20/solid'
 
-const props = defineProps<{
-    type?: "Friend Request" | "Match Request",
-    byId?: string,
-    byUsername?: string,
-}>();
+const notification = ref();
 
-const content = computed(() =>
-    props.type === "Friend Request" ?
-    `${props.byUsername} has sent you a friend request.` :
-    `${props.byUsername} has sent you a match request.`
-);
+const title = computed(() => notification.value?.title);
+const content = computed(() => notification.value?.content);
 
-const show = ref(true)
+async function pollNotifications() {
+    try {
+        notification.value = await api.Notification_GetNotifications(undefined);
+        show.value = true;
+    }
+    catch {
+        // ...
+    }
+}
+const show = ref(false);
+
+defineExpose({
+    pollNotifications
+});
 </script>
