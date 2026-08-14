@@ -49,9 +49,10 @@ namespace Chezz.Controllers
                 return TypedResults.Ok();
             }
 
-            if (await _userRelationshipManager.AddFriendRequestAsync(user1, user2))
+            var friendRequest = await _userRelationshipManager.AddFriendRequestAsync(user1, user2);
+            if (friendRequest is not null)
             {
-                await _notificationManager.AddFriendNotificationAsync(user1, user2);
+                await _notificationManager.AddFriendNotificationAsync(user1, user2, friendRequest);
             }
 
             return TypedResults.Ok();
@@ -108,6 +109,20 @@ namespace Chezz.Controllers
             }
 
             return TypedResults.Ok(await _userRelationshipManager.GetFriendRequestsAsync(user));
+        }
+
+        [HttpPost("decline-friend-request")]
+        public async Task<Results<Ok, UnauthorizedHttpResult>> DeclineFriendRequest([FromBody] FriendDeclineRequest request)
+        {
+            var user = await _userManager.GetUserAsync(HttpContext.User);
+            if (user is null)
+            {
+                return TypedResults.Unauthorized();
+            }
+
+            await _userRelationshipManager.RemoveFriendRequestAsync(request.RequestId);
+
+            return TypedResults.Ok();
         }
     }
 }

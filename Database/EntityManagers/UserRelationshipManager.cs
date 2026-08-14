@@ -85,7 +85,7 @@ namespace Chezz.Database.EntityManagers
                 .FirstOrDefaultAsync() is not null;
         }
 
-        public async Task<bool> AddFriendRequestAsync(ChezzUser userFrom, ChezzUser userTo)
+        public async Task<FriendRequest?> AddFriendRequestAsync(ChezzUser userFrom, ChezzUser userTo)
         {
             var newRequest = new FriendRequest
             {
@@ -101,10 +101,10 @@ namespace Chezz.Database.EntityManagers
             }
             catch
             {
-                return false;
+                return null;
             }
 
-            return true;
+            return newRequest;
         }
 
         public async Task RemoveFriendRequestAsync(ChezzUser userFrom, ChezzUser userTo)
@@ -112,6 +112,21 @@ namespace Chezz.Database.EntityManagers
             var requestToRemove = _dbContext.FriendRequests
                 .Where(request => request.UserFromId == request.UserFromId
                     && request.UserToId == request.UserToId)
+                .FirstOrDefaultAsync();
+
+            if (requestToRemove is null)
+            {
+                return;
+            }
+
+            _dbContext.Remove(requestToRemove);
+            await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task RemoveFriendRequestAsync(string requestId)
+        {
+            var requestToRemove = _dbContext.FriendRequests
+                .Where(request => request.Id == requestId)
                 .FirstOrDefaultAsync();
 
             if (requestToRemove is null)

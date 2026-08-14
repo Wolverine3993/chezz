@@ -11,7 +11,7 @@ namespace Chezz.Database.EntityManagers
             await _dbContext.SaveChangesAsync();
         }
 
-        public async Task AddFriendNotificationAsync(ChezzUser userTo, ChezzUser userFrom)
+        public async Task AddFriendNotificationAsync(ChezzUser userFrom, ChezzUser userTo, FriendRequest request)
         {
             var newNotification = new Notification
             {
@@ -19,7 +19,7 @@ namespace Chezz.Database.EntityManagers
                 UserId = userTo.Id,
                 Title = "Friend Request",
                 Content = $"You have recieved a friend request from {userFrom.UserName}.",
-                CallbackId = userFrom.Id,
+                CallbackId = request.Id,
             };
 
             await AddNotificationAsync(newNotification);
