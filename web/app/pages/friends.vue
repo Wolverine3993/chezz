@@ -20,7 +20,7 @@
                     <UserSearch class="col-2 flex-4"/>
                 </div>
                 <List :values="listNames" :type="'Friends'"/>
-                <Footer @next-pressed="nextPage('Friends')" @prev-pressed="prevPage('Friends')" :page="friendsPage" :count="testProps.values.length"/>
+                <Footer @next-pressed="nextPage('Friends')" @prev-pressed="prevPage('Friends')" :page="friendsPage" :count="friendLength"/>
             </div>
             <div class="col-2 mx-5 flex-1">
                 <h1 class="text-3xl font-bold tracking-tight text-white m-5">Friend Requests</h1>
@@ -42,32 +42,30 @@ api.UserRelationship_GetFriendRequests(undefined)
     requestArray.value = res;
 });
 
-const testProps = {
-    values: [
-        "a",
-        "john",
-        "3",
-        "4",
-        "5",
-        "6",
-        "7",
-        "8",
-    ],
-    type: "Friends"
-}
+const friendsList: Ref<{
+        values: string[],
+        type: "Friends" | "Requests"
+} | undefined> = ref();
+
+api.UserRelationship_GetFriends(undefined)
+.then((friends) => {
+    friendsList.value = {
+        values: friends.map((friend) => friend.username ? friend.username : "Null"),
+        type: "Friends"
+    };
+});
 
 const friendsPage = ref(0);
-let requestsPage = 0;
+const friendLength = computed(() => friendsList.value?.values.length);
 
-const listNames = ref(testProps.values.slice(0, 5));
+const listNames = computed(() => friendsList.value?.values.slice(5 * friendsPage.value, 5 * friendsPage.value + 5));
 
 function nextPage(window: "Friends" | "Requests") {
     if (window === "Friends") {
-        let listLength = Math.floor(testProps.values.length / 5);
+        let listLength = Math.floor(friendsList.value?.values.length ?? friendsPage.value * 5 / 5);
         if (listLength <= friendsPage.value) return;
 
         friendsPage.value += 1;
-        listNames.value = testProps.values.slice(5 * friendsPage.value, 5 * friendsPage.value + 5);
     }
 }
 
@@ -76,7 +74,6 @@ function prevPage(window: "Friends" | "Requests") {
         if (friendsPage.value == 0) return;
 
         friendsPage.value -= 1;
-        listNames.value = testProps.values.slice(5 * friendsPage.value, 5 * friendsPage.value + 5);
     }
 }
 </script>

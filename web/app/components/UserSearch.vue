@@ -1,6 +1,6 @@
 <template>
   <div>
-    <label for="query" class="block text-sm/6 font-medium text-white">Search candidates</label>
+    <label for="query" class="block text-sm/6 font-medium text-white">Add Friend</label>
     <div class="mt-2 flex">
       <div class="-mr-px grid grow grid-cols-1 focus-within:relative">
         <input type="text" name="query" id="query" class="col-start-1 row-start-1 block w-full rounded-l-md bg-white/5 py-1.5 pr-3 pl-10 text-base text-white outline-1 -outline-offset-1 outline-gray-700 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:pl-9 sm:text-sm/6" placeholder="John Smith" />

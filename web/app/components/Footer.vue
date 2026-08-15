@@ -4,15 +4,15 @@
       <p class="text-sm text-gray-300 px-5">
         Showing
         {{ ' ' }}
-        <span class="font-medium">{{ props.page ? props.page * 5 + 1 : 1 }}</span>
+        <span class="font-medium">{{ page ? page * 5 + 1 : 1 }}</span>
         {{ ' ' }}
         to
         {{ ' ' }}
-        <span class="font-medium">{{ props.page ? Math.min(props.page * 5 + 5, props.count ? props.count : 1) : 5 }}</span>
+        <span class="font-medium">{{ page ? Math.min(page * 5 + 5, count ? count : 1) : 1 }}</span>
         {{ ' ' }}
         of
         {{ ' ' }}
-        <span class="font-medium">{{ props.count ? props.count : 5 }}</span>
+        <span class="font-medium">{{ count ? count : 5 }}</span>
         {{ ' ' }}
         results
       </p>
@@ -31,5 +31,6 @@ const props = defineProps<{
     page?: number,
 }>();
 
-
+const count = computed(() => props.count);
+const page = computed(() => props.page);
 </script>
