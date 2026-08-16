@@ -11,7 +11,7 @@
                     <h1 class="text-3xl font-bold tracking-tight text-white m-5 col-1 flex-1">Friends</h1>
                     <UserSearch @add-friend="addFriend" class="col-2 flex-4"/>
                 </div>
-                <List :values="friendNames" :type="'Friends'"/>
+                <List :users="friendNames" :type="'Friends'" @reload="reload"/>
                 <Footer
                   @next-pressed="nextPage('Friends')"
                   @prev-pressed="prevPage('Friends')"
@@ -22,7 +22,7 @@
             </div>
             <div class="col-2 mx-5 flex-1">
                 <h1 class="text-3xl font-bold tracking-tight text-white m-5">Friend Requests</h1>
-                <List :values="requestNames" :type="'Requests'"/>
+                <List :requests="requests" :type="'Requests'" @reload="reload"/>
                 <Footer
                   @next-pressed="nextPage('Requests')"
                   @prev-pressed="prevPage('Requests')"
@@ -42,14 +42,17 @@
 <script setup lang="ts">
 import InfoNotification from '~/components/Notifications/InfoNotification.vue';
 
-api.UserRelationship_GetFriendRequests(undefined)
-.then((requests) => {
-    requestList.value = requests;
-});
-api.UserRelationship_GetFriends(undefined)
-.then((friends) => {
-    friendsList.value = friends;
-});
+function reload() {
+  api.UserRelationship_GetFriendRequests(undefined)
+  .then((requests) => {
+      requestList.value = requests;
+  });
+  api.UserRelationship_GetFriends(undefined)
+  .then((friends) => {
+      friendsList.value = friends;
+  });
+}
+reload();
 
 const friendsList: Ref<{
         username?: string | null,
@@ -57,7 +60,8 @@ const friendsList: Ref<{
 const requestList: Ref<{
     userFrom?: {
         userName?: string | null
-    }
+    },
+    id?: string | null
 }[] | undefined> = ref();
 
 const friendsPage = ref(0);
@@ -71,11 +75,14 @@ const requestsTotalPages = computed(() => Math.max(1, Math.ceil((requestLength.v
 const friendNames = computed(() => friendsList.value
     ?.map((friend) => friend.username ?? "Null")
     .slice(pageSize * friendsPage.value, pageSize * friendsPage.value + pageSize));
-const requestNames = computed(() =>
-  requestList.value
-    ?.map((request) => request.userFrom?.userName ?? "Null")
-    .slice(pageSize * requestsPage.value, pageSize * requestsPage.value + pageSize)
-);
+const requests = computed(() => {
+  return requestList.value?.map(request => {
+    return {
+      username: request.userFrom?.userName ?? "Null",
+      requestId: request.id ?? "Null"
+    }
+  }).slice(pageSize * requestsPage.value, pageSize * requestsPage.value + pageSize);
+});
 
 function nextPage(window: "Friends" | "Requests") {
     if (window === "Friends") {
