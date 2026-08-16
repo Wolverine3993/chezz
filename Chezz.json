@@ -1346,12 +1346,13 @@
       },
       "ForgotPasswordRequest": {
         "required": [
-          "email"
+          "username"
         ],
         "type": "object",
         "properties": {
-          "email": {
-            "type": "string"
+          "username": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false
