@@ -7,7 +7,9 @@ using Microsoft.AspNetCore.Mvc;
 namespace Chezz.Controllers
 {
     [Route("/api/notificationList")]
-    public class NotificationController(UserManager<ChezzUser> _userManager, NotificationManager _notificationManager) : ControllerBase
+    public class NotificationController(
+        UserManager<ChezzUser> _userManager, 
+        NotificationManager _notificationManager) : ControllerBase
     {
 
         [HttpGet]

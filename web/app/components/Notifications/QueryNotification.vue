@@ -44,6 +44,8 @@ const content = computed(() => notification.value?.content);
 
 const show = ref(false);
 
+const router = useRouter();
+
 async function pollNotifications() {
   if (show.value === true) {
     return setTimeout(() => pollNotifications(), 1000);
@@ -63,6 +65,9 @@ async function acceptRequest() {
     await api.UserRelationship_AcceptFriendRequest({
       requestId: notification.value.callbackId
     });
+  }
+  else if (notification.value.notificationType == 1) {
+    router.push(`/chess/game/${notification.value.callbackId}`);
   }
 }
 

@@ -12,10 +12,14 @@
             </div>
         </div>
         <div class="flex shrink-0 items-center gap-x-4">
-            <div class="hidden sm:flex sm:flex-col sm:items-end">
-            <p class="text-sm/6 text-white">{{ name }}</p>
-            </div>
-            <ChevronRightIcon class="size-5 flex-none text-gray-500" aria-hidden="true" />
+             <button @click="matchmake(name)" type="button" class="inline-flex items-center gap-x-1.5 hover:cursor-pointer rounded-md bg-green-500 px-3 py-2 text-sm font-semibold text-white hover:bg-green-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500">
+                Matchmake
+                <CheckCircleIcon class="-mr-0.5 size-5" aria-hidden="true" />
+            </button>
+            <button @click="unfriend(name)" type="button" class="inline-flex items-center gap-x-1.5 hover:cursor-pointer rounded-md bg-red-500 px-3 py-2 text-sm font-semibold text-white hover:bg-red-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500">
+                Unfriend
+                <XCircleIcon class="-mr-0.5 size-5" aria-hidden="true" />
+            </button>
         </div>
         </li>
 
@@ -65,8 +69,12 @@ const router = useRouter();
 
 const listLength = computed(() => props.type === "Friends" ? props.users?.length : props.requests?.length);
 
-async function matchmake() {
-    // to do
+async function matchmake(username: string) {
+    let lobbyId = await api.Chess_SendRequest({
+        username: username
+    });
+
+    router.push(`/chess/game/${lobbyId}`);
 }
 
 async function unfriend(username: string) {

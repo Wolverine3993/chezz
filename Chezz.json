@@ -81,6 +81,49 @@
         }
       }
     },
+    "/api/games/chess/lobby/send-request": {
+      "post": {
+        "tags": [
+          "Chess"
+        ],
+        "operationId": "Chess_SendRequest",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RelationshipRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RelationshipRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RelationshipRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
     "/api/games/chess/lobby/{lobbyId}/status": {
       "get": {
         "tags": [
@@ -772,6 +815,52 @@
         }
       }
     },
+    "/api/relationship/get-friends": {
+      "get": {
+        "tags": [
+          "UserRelationship"
+        ],
+        "operationId": "UserRelationship_GetFriends",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FriendResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/relationship/get-friend-requests": {
+      "get": {
+        "tags": [
+          "UserRelationship"
+        ],
+        "operationId": "UserRelationship_GetFriendRequests",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FriendRequest"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/relationship/add-friend": {
       "post": {
         "tags": [
@@ -817,25 +906,69 @@
         }
       }
     },
-    "/api/relationship/get-friends": {
-      "get": {
+    "/api/relationship/accept-friend-request": {
+      "post": {
         "tags": [
           "UserRelationship"
         ],
-        "operationId": "UserRelationship_GetFriends",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/FriendResponse"
-                  }
-                }
+        "operationId": "UserRelationship_AcceptFriendRequest",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FriendAcceptRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FriendAcceptRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/FriendAcceptRequest"
               }
             }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/relationship/decline-friend-request": {
+      "post": {
+        "tags": [
+          "UserRelationship"
+        ],
+        "operationId": "UserRelationship_DeclineFriendRequest",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FriendDeclineRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FriendDeclineRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/FriendDeclineRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
           }
         }
       }
@@ -881,96 +1014,6 @@
                 }
               }
             }
-          }
-        }
-      }
-    },
-    "/api/relationship/get-friend-requests": {
-      "get": {
-        "tags": [
-          "UserRelationship"
-        ],
-        "operationId": "UserRelationship_GetFriendRequests",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/FriendRequest"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/relationship/decline-friend-request": {
-      "post": {
-        "tags": [
-          "UserRelationship"
-        ],
-        "operationId": "UserRelationship_DeclineFriendRequest",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/FriendDeclineRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/FriendDeclineRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/FriendDeclineRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/relationship/accept-friend-request": {
-      "post": {
-        "tags": [
-          "UserRelationship"
-        ],
-        "operationId": "UserRelationship_AcceptFriendRequest",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/FriendAcceptRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/FriendAcceptRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/FriendAcceptRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "404": {
-            "description": "Not Found"
           }
         }
       }

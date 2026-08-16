@@ -1,6 +1,7 @@
 import { makeApi, Zodios, type ZodiosOptions } from "@zodios/core";
 import { z } from "zod";
 
+const RelationshipRequest = z.object({ username: z.string().nullable() });
 const LobbyInformation = z
   .object({
     playerUsernames: z.array(z.string()).nullable(),
@@ -84,7 +85,6 @@ const Notification = z.object({
   content: z.string().nullish(),
   callbackId: z.string().nullish(),
 });
-const RelationshipRequest = z.object({ username: z.string().nullable() });
 const FriendResponse = z
   .object({ username: z.string().nullable(), id: z.string().nullable() })
   .partial();
@@ -114,14 +114,15 @@ const FriendRequest = z.object({
   userToId: z.string().nullish(),
   userTo: ChezzUser.optional(),
 });
-const FriendDeclineRequest = z
+const FriendAcceptRequest = z
   .object({ requestId: z.string().nullable() })
   .partial();
-const FriendAcceptRequest = z
+const FriendDeclineRequest = z
   .object({ requestId: z.string().nullable() })
   .partial();
 
 export const schemas = {
+  RelationshipRequest,
   LobbyInformation,
   ChessPieceEnum,
   PieceColor,
@@ -140,12 +141,11 @@ export const schemas = {
   InfoRequest,
   NotificationType,
   Notification,
-  RelationshipRequest,
   FriendResponse,
   ChezzUser,
   FriendRequest,
-  FriendDeclineRequest,
   FriendAcceptRequest,
+  FriendDeclineRequest,
 };
 
 const endpoints = makeApi([
@@ -263,6 +263,27 @@ const endpoints = makeApi([
     alias: "Chess_Matchmake",
     requestFormat: "json",
     response: z.string().uuid(),
+  },
+  {
+    method: "post",
+    path: "/api/games/chess/lobby/send-request",
+    alias: "Chess_SendRequest",
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "body",
+        type: "Body",
+        schema: z.object({ username: z.string().nullable() }),
+      },
+    ],
+    response: z.string().uuid(),
+    errors: [
+      {
+        status: 404,
+        description: `Not Found`,
+        schema: z.void(),
+      },
+    ],
   },
   {
     method: "get",

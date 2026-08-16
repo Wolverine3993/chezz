@@ -20,6 +20,22 @@ namespace Chezz.Database.EntityManagers
                 Title = "Friend Request",
                 Content = $"You have recieved a friend request from {userFrom.UserName}.",
                 CallbackId = request.Id,
+                NotificationType = NotificationType.FriendRequest,
+            };
+
+            await AddNotificationAsync(newNotification);
+        }
+
+        public async Task AddMatchmakeNotificationAsync(ChezzUser userFrom, ChezzUser userTo, string matchId)
+        {
+            var newNotification = new Notification
+            {
+                Id = Guid.NewGuid().ToString(),
+                UserId = userTo.Id,
+                Title = "Match Request",
+                Content = $"You have recieved a match request from {userFrom.UserName}.",
+                CallbackId = matchId,
+                NotificationType = NotificationType.MatchInvitation,
             };
 
             await AddNotificationAsync(newNotification);

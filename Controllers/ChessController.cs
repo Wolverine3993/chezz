@@ -1,4 +1,5 @@
-﻿using Chezz.Database.Models;
+﻿using Chezz.Database.EntityManagers;
+using Chezz.Database.Models;
 using Chezz.Game;
 using Chezz.Game.Games.Chess;
 using Microsoft.AspNetCore.Identity;
@@ -10,7 +11,7 @@ namespace Chezz.Controllers
 	[Route("/api/games/chess")]
 	public class ChessController : GameController<ChessMove, ChessPiece, ChessGameState, ChessGameStore, ChessGameImplementation>
 	{
-		public ChessController(UserManager<ChezzUser> userManager, LobbyRegistry lobbyRegistry, GameRegistry<ChessMove, ChessPiece, ChessGameState, ChessGameStore, ChessGameImplementation> registry) : base(userManager, lobbyRegistry, registry)
+		public ChessController(UserManager<ChezzUser> userManager, LobbyRegistry lobbyRegistry, GameRegistry<ChessMove, ChessPiece, ChessGameState, ChessGameStore, ChessGameImplementation> registry, UserRelationshipManager userRelationshipManager, NotificationManager notificationManager) : base(userManager, notificationManager, userRelationshipManager, lobbyRegistry, registry)
 		{
 		}
 
