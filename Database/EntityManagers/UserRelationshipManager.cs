@@ -121,7 +121,7 @@ namespace Chezz.Database.EntityManagers
 
         public async Task RemoveFriendRequestAsync(ChezzUser userFrom, ChezzUser userTo)
         {
-            var requestToRemove = _dbContext.FriendRequests
+            var requestToRemove = await _dbContext.FriendRequests
                 .Where(request => request.UserFromId == request.UserFromId
                     && request.UserToId == request.UserToId)
                 .FirstOrDefaultAsync();
