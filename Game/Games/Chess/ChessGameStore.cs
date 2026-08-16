@@ -1,9 +1,10 @@
 using Chezz.Game.Func;
 using Chezz.Game.Players;
+using System.Text;
 
 namespace Chezz.Game.Games.Chess;
 
-public class ChessGameStore : IGameState<ChessPiece, ChessMove>
+public class ChessGameStore : IGameState<ChessMove>
 {
 	public Lobby Lobby { get; set; }
 	public ChessPiece?[,] Board { get; private set; }
@@ -11,6 +12,16 @@ public class ChessGameStore : IGameState<ChessPiece, ChessMove>
 	private List<(IPlayer, ChessMove)> moveList = new();
 
 	public ChessMove? LastMove => moveList.Count > 0 ? moveList[^1].Item2 : null;
+
+	public bool HasMovedFrom(ChessPosition position)
+	{
+		foreach ((IPlayer _, ChessMove move) in moveList)
+		{
+			if (move.From == position) return true;
+		}
+
+		return false;
+	}
 
 	private ChessPiece?[,] LoadFen(string fen)
 	{
@@ -27,7 +38,7 @@ public class ChessGameStore : IGameState<ChessPiece, ChessMove>
 					x += skip;
 					continue;
 				}
-				int player = piece.ToUpper() == piece ? 0 : 1; // White if uppercase, otherwise lowercase
+				int player = piece.ToUpper() == piece ? 0 : 1; // White if uppercase
 
 				string pieceLowercase = piece.ToLower();
 				ChessPiece.ChessPieceEnum type = pieceLowercase switch
@@ -59,23 +70,48 @@ public class ChessGameStore : IGameState<ChessPiece, ChessMove>
 
 	public bool AddMoveByPlayer(ChessMove move, IPlayer player)
 	{
-		ChessPiece? from = Board[move.From.X, move.From.Y];
-		if (from == null) return false;
-
-		// En passant: a pawn moving diagonally onto an empty square captures the
-		// enemy pawn sitting on the moving pawn's origin rank.
-		if (from.Type == ChessPiece.ChessPieceEnum.Pawn
-			&& move.From.X != move.To.X
-			&& Board[move.To.X, move.To.Y] == null)
-		{
-			Board[move.To.X, move.From.Y] = null;
-		}
-
-		Board[move.From.X, move.From.Y] = null;
-		Board[move.To.X, move.To.Y] = from;
+		bool result = move.MutateBoard(this.Board);
+		if (!result) return false;
 
 		moveList.Add((player, move));
 
 		return true;
+	}
+
+	public PackedBoardState ToPackedBoard()
+	{
+		StringBuilder builder = new StringBuilder();
+		Dictionary<string, string> imageUrls = new();
+		for (int x = 0; x < Board.GetLength(0); x++)
+		{
+			for (int y = 0; y < Board.GetLength(1); y++)
+			{
+				var piece = Board[x, y];
+				if (piece == null)
+				{
+					builder.Append(".");
+					continue;
+				}
+
+				var capital = piece.Color == ChessPiece.PieceColor.White;
+				var pieceChar = piece.Type switch
+				{
+					ChessPiece.ChessPieceEnum.Pawn => "p",
+					ChessPiece.ChessPieceEnum.Knight => "n",
+					ChessPiece.ChessPieceEnum.Bishop => "b",
+					ChessPiece.ChessPieceEnum.Rook => "r",
+					ChessPiece.ChessPieceEnum.Queen => "q",
+					ChessPiece.ChessPieceEnum.King => "k",
+				};
+				pieceChar = capital ? pieceChar.ToUpper() : pieceChar.ToLower();
+
+				builder.Append(pieceChar);
+				imageUrls.TryAdd(pieceChar, piece.ImageUrl);
+			}
+			builder.Append("\n");
+		}
+		string packedBoard = builder.ToString();
+
+		return new() { PackedBoard = packedBoard, ImageUrls = imageUrls }; ;
 	}
 }

@@ -29,8 +29,36 @@ namespace Chezz.Game.Players
 
 		public string Username => _user.UserName ?? _user.Email ?? "Unknown user";
 
-		public async Task Notify()
+		private CancellationTokenSource? _notifyDebounceCts;
+		private readonly Lock _notifyDebounceLock = new();
+		private const int NotifyDebounceMilliseconds = 25;
+
+		public Task Notify()
 		{
+			lock (_notifyDebounceLock)
+			{
+				_notifyDebounceCts?.Cancel();
+				_notifyDebounceCts?.Dispose();
+				_notifyDebounceCts = new CancellationTokenSource();
+
+				_ = DebouncedNotifyAsync(_notifyDebounceCts.Token);
+			}
+
+			return Task.CompletedTask;
+		}
+
+		private async Task DebouncedNotifyAsync(CancellationToken debounceToken)
+		{
+			try
+			{
+				await Task.Delay(NotifyDebounceMilliseconds, debounceToken);
+			}
+			catch (OperationCanceledException)
+			{
+				// A newer notify arrived within the debounce window; this one is superseded.
+				return;
+			}
+
 			var message = Encoding.UTF8.GetBytes("notify");
 			await _webSocket.SendAsync(message, WebSocketMessageType.Text, true, _cancelToken);
 		}

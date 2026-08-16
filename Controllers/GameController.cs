@@ -9,15 +9,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Org.BouncyCastle.Asn1.Ocsp;
-using System.Text.Json;
 
 namespace Chezz.Controllers;
 
 [Authorize]
 public abstract class GameController<TMove, TPiece, TGameStatus, TGs, TGi> : ControllerBase where TPiece : IPiece
 	where TMove : IMove
-	where TGs : IGameState<TPiece, TMove>, new()
+	where TGs : IGameState<TMove>, new()
 	where TGi : IGameImplementation<TPiece, TMove, TGameStatus, TGs>, new()
 {
 	protected GameRegistry<TMove, TPiece, TGameStatus, TGs, TGi> GameRegistry { get; }
@@ -192,16 +190,16 @@ public abstract class GameController<TMove, TPiece, TGameStatus, TGs, TGi> : Con
 		return game.RequestMovesForPlayer(player);
 	}
 
+	public record MoveRequest(string moveId);
+
 	[HttpPost("game/{gameId}/move", Name = "MakeMove")]
-	public async Task<bool> MakeMove(Guid gameId, [FromBody] TMove move)
+	public async Task<bool> MakeMove(Guid gameId, [FromBody] MoveRequest move)
 	{
 		var (game, user) = await GetGameUser(gameId);
 
 		var player = game.GameStore.Lobby.FromChezzUser(user);
 		if (player == null) throw new BadRequestException("Not in game, or cannot convert IPlayer");
 
-		Console.WriteLine(JsonSerializer.Serialize(move));
-
-		return await game.MakeMove(player, move);
+		return await game.MakeMove(player, move.moveId);
 	}
 }

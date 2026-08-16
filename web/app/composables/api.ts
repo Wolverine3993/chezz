@@ -1,14 +1,45 @@
 import { makeApi, Zodios, type ZodiosOptions } from "@zodios/core";
 import { z } from "zod";
 
-const RelationshipRequest = z.object({ username: z.string().nullable() });
-const LobbyInformation = z
-  .object({
-    playerUsernames: z.array(z.string()).nullable(),
-    gameId: z.string().uuid().nullable(),
-    isPrivate: z.boolean(),
-  })
-  .partial();
+const RelationshipRequest = z.object({ username: z.string() });
+const LobbyInformation = z.object({
+  playerUsernames: z.array(z.string()),
+  gameId: z.string().uuid().nullish(),
+  isPrivate: z.boolean(),
+});
+const PackedBoardState = z.object({
+  packedBoard: z.string(),
+  imageUrls: z.record(z.string()),
+});
+const PieceColor = z.enum(["White", "Black"]);
+const ChessGameResult = z.union([
+  z.literal(0),
+  z.literal(1),
+  z.literal(2),
+  z.literal(3),
+]);
+const ChessGameState = z.object({
+  packedBoard: PackedBoardState,
+  yourTurn: z.boolean(),
+  yourColor: PieceColor,
+  gameResult: ChessGameResult,
+});
+const ChessPosition = z.object({ x: z.number().int(), y: z.number().int() });
+const ChessMove = z.object({
+  kind: z.string(),
+  from: ChessPosition,
+  to: ChessPosition,
+  moveId: z.string(),
+});
+const NormalChessMove = ChessMove.and(
+  z.object({ moveId: z.string(), kind: z.literal("Normal") })
+);
+const EnPassantChessMove = ChessMove.and(
+  z.object({ moveId: z.string(), kind: z.literal("EnPassant") })
+);
+const CastlingChessMove = ChessMove.and(
+  z.object({ moveId: z.string(), kind: z.literal("Castle") })
+);
 const ChessPieceEnum = z.enum([
   "Pawn",
   "Knight",
@@ -17,58 +48,46 @@ const ChessPieceEnum = z.enum([
   "Queen",
   "King",
 ]);
-const PieceColor = z.enum(["White", "Black"]);
-const ChessPiece = z
-  .object({
-    type: ChessPieceEnum,
-    playerId: z.string().nullable(),
-    color: PieceColor,
-    imageUrl: z.string().nullable(),
-  })
-  .partial();
-const ChessGameState = z.object({
-  board: z.array(z.array(ChessPiece.nullable())).nullable(),
-  yourTurn: z.boolean(),
-  yourColor: PieceColor,
+const ChessPiece = z.object({
+  type: ChessPieceEnum,
+  playerId: z.string(),
+  color: PieceColor,
+  imageUrl: z.string(),
 });
-const ChessPosition = z
-  .object({ x: z.number().int(), y: z.number().int() })
-  .partial();
-const ChessMove = z
-  .object({ from: ChessPosition, to: ChessPosition })
-  .partial();
+const PromotionChessMove = ChessMove.and(
+  z.object({
+    promotionPiece: ChessPiece,
+    moveId: z.string(),
+    kind: z.literal("Promotion"),
+  })
+);
+const ChessMoveChessPieceChessGameStateChessGameStoreChessGameImplementationMoveRequest =
+  z.object({ moveId: z.string() });
 const RegisterRequest = z.object({
-  username: z.string().nullable(),
-  email: z.string().nullable(),
-  password: z.string().nullable(),
+  username: z.string(),
+  email: z.string(),
+  password: z.string(),
 });
-const LoginRequest = z.object({
-  username: z.string().nullable(),
-  password: z.string().nullable(),
-});
+const LoginRequest = z.object({ username: z.string(), password: z.string() });
 const AccessTokenResponse = z.object({
-  tokenType: z.string().nullish(),
-  accessToken: z.string().nullable(),
+  tokenType: z.string(),
+  accessToken: z.string(),
   expiresIn: z.number().int(),
-  refreshToken: z.string().nullable(),
+  refreshToken: z.string(),
 });
-const RefreshRequest = z.object({ refreshToken: z.string().nullable() });
-const ResendConfirmationEmailRequest = z.object({
-  email: z.string().nullable(),
-});
-const ForgotPasswordRequest = z.object({ email: z.string().nullable() });
+const RefreshRequest = z.object({ refreshToken: z.string() });
+const ResendConfirmationEmailRequest = z.object({ email: z.string() });
+const ForgotPasswordRequest = z.object({ email: z.string() });
 const ResetPasswordRequest = z.object({
-  email: z.string().nullable(),
-  resetCode: z.string().nullable(),
-  newPassword: z.string().nullable(),
+  email: z.string(),
+  resetCode: z.string(),
+  newPassword: z.string(),
 });
-const InfoResponse = z
-  .object({
-    username: z.string().nullable(),
-    email: z.string().nullable(),
-    isEmailConfirmed: z.boolean(),
-  })
-  .partial();
+const InfoResponse = z.object({
+  username: z.string(),
+  email: z.string(),
+  isEmailConfirmed: z.boolean(),
+});
 const InfoRequest = z
   .object({
     newEmail: z.string().nullable(),
@@ -78,58 +97,60 @@ const InfoRequest = z
   .partial();
 const NotificationType = z.union([z.literal(0), z.literal(1)]);
 const Notification = z.object({
-  id: z.string().nullable(),
-  userId: z.string().nullish(),
-  notificationType: NotificationType.optional(),
-  title: z.string().nullish(),
-  content: z.string().nullish(),
-  callbackId: z.string().nullish(),
+  id: z.string(),
+  userId: z.string(),
+  notificationType: NotificationType,
+  title: z.string(),
+  content: z.string(),
+  callbackId: z.string(),
 });
-const FriendResponse = z
-  .object({ username: z.string().nullable(), id: z.string().nullable() })
-  .partial();
-const ChezzUser = z
-  .object({
-    id: z.string().nullable(),
-    userName: z.string().nullable(),
-    normalizedUserName: z.string().nullable(),
-    email: z.string().nullable(),
-    normalizedEmail: z.string().nullable(),
-    emailConfirmed: z.boolean(),
-    passwordHash: z.string().nullable(),
-    securityStamp: z.string().nullable(),
-    concurrencyStamp: z.string().nullable(),
-    phoneNumber: z.string().nullable(),
-    phoneNumberConfirmed: z.boolean(),
-    twoFactorEnabled: z.boolean(),
-    lockoutEnd: z.string().datetime({ offset: true }).nullable(),
-    lockoutEnabled: z.boolean(),
-    accessFailedCount: z.number().int(),
-  })
-  .partial();
+const FriendResponse = z.object({
+  username: z.string().nullish(),
+  id: z.string(),
+});
+const ChezzUser = z.object({
+  id: z.string(),
+  userName: z.string().nullish(),
+  normalizedUserName: z.string().nullish(),
+  email: z.string().nullish(),
+  normalizedEmail: z.string().nullish(),
+  emailConfirmed: z.boolean(),
+  passwordHash: z.string().nullish(),
+  securityStamp: z.string().nullish(),
+  concurrencyStamp: z.string().nullish(),
+  phoneNumber: z.string().nullish(),
+  phoneNumberConfirmed: z.boolean(),
+  twoFactorEnabled: z.boolean(),
+  lockoutEnd: z.string().datetime({ offset: true }).nullish(),
+  lockoutEnabled: z.boolean(),
+  accessFailedCount: z.number().int(),
+});
 const FriendRequest = z.object({
-  id: z.string().nullable(),
-  userFromId: z.string().nullish(),
-  userFrom: ChezzUser.optional(),
-  userToId: z.string().nullish(),
-  userTo: ChezzUser.optional(),
+  id: z.string(),
+  userFromId: z.string(),
+  userFrom: ChezzUser,
+  userToId: z.string(),
+  userTo: ChezzUser,
 });
-const FriendAcceptRequest = z
-  .object({ requestId: z.string().nullable() })
-  .partial();
-const FriendDeclineRequest = z
-  .object({ requestId: z.string().nullable() })
-  .partial();
+const FriendAcceptRequest = z.object({ requestId: z.string() });
+const FriendDeclineRequest = z.object({ requestId: z.string() });
 
 export const schemas = {
   RelationshipRequest,
   LobbyInformation,
-  ChessPieceEnum,
+  PackedBoardState,
   PieceColor,
-  ChessPiece,
+  ChessGameResult,
   ChessGameState,
   ChessPosition,
   ChessMove,
+  NormalChessMove,
+  EnPassantChessMove,
+  CastlingChessMove,
+  ChessPieceEnum,
+  ChessPiece,
+  PromotionChessMove,
+  ChessMoveChessPieceChessGameStateChessGameStoreChessGameImplementationMoveRequest,
   RegisterRequest,
   LoginRequest,
   AccessTokenResponse,
@@ -158,7 +179,7 @@ const endpoints = makeApi([
       {
         name: "body",
         type: "Body",
-        schema: ChessMove,
+        schema: z.object({ moveId: z.string() }),
       },
       {
         name: "gameId",
@@ -180,7 +201,14 @@ const endpoints = makeApi([
         schema: z.string().uuid(),
       },
     ],
-    response: z.array(ChessMove),
+    response: z.array(
+      z.union([
+        NormalChessMove,
+        EnPassantChessMove,
+        CastlingChessMove,
+        PromotionChessMove,
+      ])
+    ),
   },
   {
     method: "get",
@@ -273,7 +301,7 @@ const endpoints = makeApi([
       {
         name: "body",
         type: "Body",
-        schema: z.object({ username: z.string().nullable() }),
+        schema: z.object({ username: z.string() }),
       },
     ],
     response: z.string().uuid(),
@@ -318,7 +346,7 @@ const endpoints = makeApi([
       {
         name: "body",
         type: "Body",
-        schema: z.object({ email: z.string().nullable() }),
+        schema: z.object({ email: z.string() }),
       },
     ],
     response: z.void(),
@@ -410,7 +438,7 @@ const endpoints = makeApi([
       {
         name: "body",
         type: "Body",
-        schema: z.object({ refreshToken: z.string().nullable() }),
+        schema: z.object({ refreshToken: z.string() }),
       },
     ],
     response: AccessTokenResponse,
@@ -445,7 +473,7 @@ const endpoints = makeApi([
       {
         name: "body",
         type: "Body",
-        schema: z.object({ email: z.string().nullable() }),
+        schema: z.object({ email: z.string() }),
       },
     ],
     response: z.void(),
@@ -494,7 +522,7 @@ const endpoints = makeApi([
       {
         name: "body",
         type: "Body",
-        schema: z.object({ requestId: z.string().nullable() }).partial(),
+        schema: z.object({ requestId: z.string() }),
       },
     ],
     response: z.void(),
@@ -515,7 +543,7 @@ const endpoints = makeApi([
       {
         name: "body",
         type: "Body",
-        schema: z.object({ username: z.string().nullable() }),
+        schema: z.object({ username: z.string() }),
       },
     ],
     response: z.void(),
@@ -541,7 +569,7 @@ const endpoints = makeApi([
       {
         name: "body",
         type: "Body",
-        schema: z.object({ requestId: z.string().nullable() }).partial(),
+        schema: z.object({ requestId: z.string() }),
       },
     ],
     response: z.void(),
@@ -569,7 +597,7 @@ const endpoints = makeApi([
       {
         name: "body",
         type: "Body",
-        schema: z.object({ username: z.string().nullable() }),
+        schema: z.object({ username: z.string() }),
       },
     ],
     response: z.void(),

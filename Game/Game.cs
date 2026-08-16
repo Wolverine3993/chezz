@@ -4,10 +4,10 @@ using Chezz.Game.Players;
 
 namespace Chezz.Game;
 
-public class Game<TMove, TPiece, TGameStatus, TGameState, TGameImplementation> : IBoardStyle where TPiece : IPiece
+public class Game<TMove, TPiece, TGameSerializedState, TGameState, TGameImplementation> : IBoardStyle where TPiece : IPiece
 	where TMove : IMove
-	where TGameState : IGameState<TPiece, TMove>
-	where TGameImplementation : IGameImplementation<TPiece, TMove, TGameStatus, TGameState>
+	where TGameState : IGameState<TMove>
+	where TGameImplementation : IGameImplementation<TPiece, TMove, TGameSerializedState, TGameState>
 {
 	public Guid Id { get; }
 	public TGameState GameStore { get; }
@@ -50,7 +50,7 @@ public class Game<TMove, TPiece, TGameStatus, TGameState, TGameImplementation> :
 		return GameStore.Lobby.Players[GameImplementation.CurrentTurn].Id == player.Id;
 	}
 
-	public async Task<bool> MakeMove(IPlayer player, TMove move)
+	public async Task<bool> MakeMove(IPlayer player, string moveId)
 	{
 		if (!IsTurn(player)) return false;
 		if (currentMoves == null)
@@ -58,7 +58,9 @@ public class Game<TMove, TPiece, TGameStatus, TGameState, TGameImplementation> :
 			currentMoves = RequestMovesForPlayer(player);
 		}
 
-		if (!currentMoves.Any((v) => v.Equals(move))) return false;
+		TMove? move = currentMoves.Find((v) => v.MoveId == moveId);
+
+		if (move == null) return false;
 
 		bool result = GameStore.AddMoveByPlayer(move, player);
 		if (!result) return false;
@@ -67,12 +69,11 @@ public class Game<TMove, TPiece, TGameStatus, TGameState, TGameImplementation> :
 		GameImplementation.OnMakeMove(GameStore, player, move);
 		currentMoves = null;
 		await Notify();
-		Console.WriteLine("made move");
 		return true;
 	}
 
-	public TGameStatus GetStatus(IPlayer player)
+	public TGameSerializedState GetStatus(IPlayer player)
 	{
-		return GameImplementation.GetStatus(GameStore, player);
+		return GameImplementation.GetSerializedState(GameStore, player);
 	}
 }
