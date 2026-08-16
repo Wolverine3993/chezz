@@ -3,6 +3,7 @@ using System;
 using Chezz.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Chezz.Migrations
 {
     [DbContext(typeof(ChezzDbContext))]
-    partial class ChezzDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260812013442_AddNotificationsTable")]
+    partial class AddNotificationsTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.10");
@@ -107,38 +110,12 @@ namespace Chezz.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("Chezz.Database.Models.FriendRequest", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("UserFromId")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("UserToId")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserFromId");
-
-                    b.HasIndex("UserToId");
-
-                    b.HasIndex("UserToId", "UserFromId")
-                        .IsUnique();
-
-                    b.ToTable("FriendRequests");
-                });
-
             modelBuilder.Entity("Chezz.Database.Models.Notification", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("CallbackId")
-                        .IsRequired()
+                    b.Property<Guid>("CallbackId")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Content")
@@ -288,25 +265,6 @@ namespace Chezz.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
-                });
-
-            modelBuilder.Entity("Chezz.Database.Models.FriendRequest", b =>
-                {
-                    b.HasOne("Chezz.Database.Models.ChezzUser", "UserFrom")
-                        .WithMany()
-                        .HasForeignKey("UserFromId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Chezz.Database.Models.ChezzUser", "UserTo")
-                        .WithMany()
-                        .HasForeignKey("UserToId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("UserFrom");
-
-                    b.Navigation("UserTo");
                 });
 
             modelBuilder.Entity("Chezz.Database.Models.UserRelationship", b =>

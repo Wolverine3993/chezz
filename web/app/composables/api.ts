@@ -1,6 +1,7 @@
 import { makeApi, Zodios, type ZodiosOptions } from "@zodios/core";
 import { z } from "zod";
 
+const RelationshipRequest = z.object({ username: z.string().nullable() });
 const LobbyInformation = z
   .object({
     playerUsernames: z.array(z.string()).nullable(),
@@ -75,8 +76,53 @@ const InfoRequest = z
     oldPassword: z.string().nullable(),
   })
   .partial();
+const NotificationType = z.union([z.literal(0), z.literal(1)]);
+const Notification = z.object({
+  id: z.string().nullable(),
+  userId: z.string().nullish(),
+  notificationType: NotificationType.optional(),
+  title: z.string().nullish(),
+  content: z.string().nullish(),
+  callbackId: z.string().nullish(),
+});
+const FriendResponse = z
+  .object({ username: z.string().nullable(), id: z.string().nullable() })
+  .partial();
+const ChezzUser = z
+  .object({
+    id: z.string().nullable(),
+    userName: z.string().nullable(),
+    normalizedUserName: z.string().nullable(),
+    email: z.string().nullable(),
+    normalizedEmail: z.string().nullable(),
+    emailConfirmed: z.boolean(),
+    passwordHash: z.string().nullable(),
+    securityStamp: z.string().nullable(),
+    concurrencyStamp: z.string().nullable(),
+    phoneNumber: z.string().nullable(),
+    phoneNumberConfirmed: z.boolean(),
+    twoFactorEnabled: z.boolean(),
+    lockoutEnd: z.string().datetime({ offset: true }).nullable(),
+    lockoutEnabled: z.boolean(),
+    accessFailedCount: z.number().int(),
+  })
+  .partial();
+const FriendRequest = z.object({
+  id: z.string().nullable(),
+  userFromId: z.string().nullish(),
+  userFrom: ChezzUser.optional(),
+  userToId: z.string().nullish(),
+  userTo: ChezzUser.optional(),
+});
+const FriendAcceptRequest = z
+  .object({ requestId: z.string().nullable() })
+  .partial();
+const FriendDeclineRequest = z
+  .object({ requestId: z.string().nullable() })
+  .partial();
 
 export const schemas = {
+  RelationshipRequest,
   LobbyInformation,
   ChessPieceEnum,
   PieceColor,
@@ -93,6 +139,13 @@ export const schemas = {
   ResetPasswordRequest,
   InfoResponse,
   InfoRequest,
+  NotificationType,
+  Notification,
+  FriendResponse,
+  ChezzUser,
+  FriendRequest,
+  FriendAcceptRequest,
+  FriendDeclineRequest,
 };
 
 const endpoints = makeApi([
@@ -210,6 +263,27 @@ const endpoints = makeApi([
     alias: "Chess_Matchmake",
     requestFormat: "json",
     response: z.string().uuid(),
+  },
+  {
+    method: "post",
+    path: "/api/games/chess/lobby/send-request",
+    alias: "Chess_SendRequest",
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "body",
+        type: "Body",
+        schema: z.object({ username: z.string().nullable() }),
+      },
+    ],
+    response: z.string().uuid(),
+    errors: [
+      {
+        status: 404,
+        description: `Not Found`,
+        schema: z.void(),
+      },
+    ],
   },
   {
     method: "get",
@@ -394,6 +468,116 @@ const endpoints = makeApi([
         status: 400,
         description: `Bad Request`,
         schema: z.record(z.array(z.string())),
+      },
+    ],
+  },
+  {
+    method: "get",
+    path: "/api/notificationList",
+    alias: "Notification_GetNotifications",
+    requestFormat: "json",
+    response: Notification,
+    errors: [
+      {
+        status: 404,
+        description: `Not Found`,
+        schema: z.void(),
+      },
+    ],
+  },
+  {
+    method: "post",
+    path: "/api/relationship/accept-friend-request",
+    alias: "UserRelationship_AcceptFriendRequest",
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "body",
+        type: "Body",
+        schema: z.object({ requestId: z.string().nullable() }).partial(),
+      },
+    ],
+    response: z.void(),
+    errors: [
+      {
+        status: 404,
+        description: `Not Found`,
+        schema: z.void(),
+      },
+    ],
+  },
+  {
+    method: "post",
+    path: "/api/relationship/add-friend",
+    alias: "UserRelationship_AddFriendRequest",
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "body",
+        type: "Body",
+        schema: z.object({ username: z.string().nullable() }),
+      },
+    ],
+    response: z.void(),
+    errors: [
+      {
+        status: 404,
+        description: `Not Found`,
+        schema: z.void(),
+      },
+      {
+        status: 409,
+        description: `Conflict`,
+        schema: z.string(),
+      },
+    ],
+  },
+  {
+    method: "post",
+    path: "/api/relationship/decline-friend-request",
+    alias: "UserRelationship_DeclineFriendRequest",
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "body",
+        type: "Body",
+        schema: z.object({ requestId: z.string().nullable() }).partial(),
+      },
+    ],
+    response: z.void(),
+  },
+  {
+    method: "get",
+    path: "/api/relationship/get-friend-requests",
+    alias: "UserRelationship_GetFriendRequests",
+    requestFormat: "json",
+    response: z.array(FriendRequest),
+  },
+  {
+    method: "get",
+    path: "/api/relationship/get-friends",
+    alias: "UserRelationship_GetFriends",
+    requestFormat: "json",
+    response: z.array(FriendResponse),
+  },
+  {
+    method: "delete",
+    path: "/api/relationship/remove-friend",
+    alias: "UserRelationship_RemoveFriend",
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "body",
+        type: "Body",
+        schema: z.object({ username: z.string().nullable() }),
+      },
+    ],
+    response: z.void(),
+    errors: [
+      {
+        status: 404,
+        description: `Not Found`,
+        schema: z.record(z.string()),
       },
     ],
   },

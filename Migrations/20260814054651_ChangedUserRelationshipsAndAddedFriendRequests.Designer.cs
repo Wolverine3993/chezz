@@ -3,6 +3,7 @@ using System;
 using Chezz.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Chezz.Migrations
 {
     [DbContext(typeof(ChezzDbContext))]
-    partial class ChezzDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260814054651_ChangedUserRelationshipsAndAddedFriendRequests")]
+    partial class ChangedUserRelationshipsAndAddedFriendRequests
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.10");
