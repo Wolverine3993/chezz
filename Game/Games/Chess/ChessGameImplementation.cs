@@ -364,7 +364,7 @@ public class ChessGameImplementation : IGameImplementation<ChessPiece, ChessMove
 		CurrentTurn += 1;
 		CurrentTurn %= gameStore.Lobby.Players.Count;
 	}
-	public ChessGameState GetStatus(ChessGameStore gameStore, IPlayer player)
+	public ChessGameState GetSerializedState(ChessGameStore gameStore, IPlayer player)
 	{
 		int playerIndex = gameStore.Lobby.Players.FindIndex(v => v.Id == player.Id);
 

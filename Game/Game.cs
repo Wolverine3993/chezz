@@ -4,10 +4,10 @@ using Chezz.Game.Players;
 
 namespace Chezz.Game;
 
-public class Game<TMove, TPiece, TGameStatus, TGameState, TGameImplementation> : IBoardStyle where TPiece : IPiece
+public class Game<TMove, TPiece, TGameSerializedState, TGameState, TGameImplementation> : IBoardStyle where TPiece : IPiece
 	where TMove : IMove
 	where TGameState : IGameState<TMove>
-	where TGameImplementation : IGameImplementation<TPiece, TMove, TGameStatus, TGameState>
+	where TGameImplementation : IGameImplementation<TPiece, TMove, TGameSerializedState, TGameState>
 {
 	public Guid Id { get; }
 	public TGameState GameStore { get; }
@@ -72,8 +72,8 @@ public class Game<TMove, TPiece, TGameStatus, TGameState, TGameImplementation> :
 		return true;
 	}
 
-	public TGameStatus GetStatus(IPlayer player)
+	public TGameSerializedState GetStatus(IPlayer player)
 	{
-		return GameImplementation.GetStatus(GameStore, player);
+		return GameImplementation.GetSerializedState(GameStore, player);
 	}
 }

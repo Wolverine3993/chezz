@@ -2,7 +2,7 @@ using Chezz.Game.Players;
 
 namespace Chezz.Game.Func;
 
-public interface IGameImplementation<TPiece, TMove, TGameStatus, TGameStore> where TPiece : IPiece where TMove : IMove where TGameStore : IGameState<TMove>
+public interface IGameImplementation<TPiece, TMove, TGameSerializedState, TGameStore> where TPiece : IPiece where TMove : IMove where TGameStore : IGameState<TMove>
 {
 	public int CurrentTurn { get; set; }
 
@@ -10,5 +10,5 @@ public interface IGameImplementation<TPiece, TMove, TGameStatus, TGameStore> whe
 
 	void OnMakeMove(TGameStore gameStore, IPlayer player, TMove move);
 
-	TGameStatus GetStatus(TGameStore gameStore, IPlayer player);
+	TGameSerializedState GetSerializedState(TGameStore gameStore, IPlayer player);
 }
