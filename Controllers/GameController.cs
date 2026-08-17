@@ -125,8 +125,6 @@ public abstract class GameController<TMove, TPiece, TGameStatus, TGs, TGi> : Con
 		}
 		catch (ChezzError ex) when (!HttpContext.Response.HasStarted)
 		{
-			// WebSocket handshakes can't be turned into ProblemDetails responses,
-			// so fail the handshake with the proper status code instead of crashing.
 			HttpContext.Response.StatusCode = ex.StatusCode;
 			return;
 		}
@@ -140,7 +138,6 @@ public abstract class GameController<TMove, TPiece, TGameStatus, TGs, TGi> : Con
 			GameRegistry.Add(new(lobby, new TGs(), new TGi()));
 		}
 
-		// Wait until WebSocket closes
 		await player.WaitForCloseAsync();
 	}
 

@@ -9,9 +9,6 @@ namespace Chezz.Game.Games.Chess
 		public static implicit operator (int, int)(ChessPosition position) => (position.X, position.Y);
 	}
 
-	// Polymorphic serialization: each subtype is emitted as its own schema under a
-	// oneOf, tagged by the "kind" discriminator. This lets subtype-only data (e.g.
-	// PromotionChessMove.PromotionPiece) appear only on the variant that has it.
 	[JsonPolymorphic(TypeDiscriminatorPropertyName = "kind")]
 	[JsonDerivedType(typeof(NormalChessMove), "Normal")]
 	[JsonDerivedType(typeof(EnPassantChessMove), "EnPassant")]
@@ -55,7 +52,6 @@ namespace Chezz.Game.Games.Chess
 			board[From.X, From.Y] = null;
 			board[To.X, To.Y] = from;
 
-			// Captured pawn sits in the destination file on the mover's rank
 			board[To.X, From.Y] = null;
 
 			return true;
@@ -74,7 +70,6 @@ namespace Chezz.Game.Games.Chess
 			int direction = Math.Sign(To.X - From.X);
 			if (direction == 0) return false;
 
-			// Rook sits at the board edge in the castling direction
 			int rookX = direction > 0 ? board.GetLength(0) - 1 : 0;
 			ChessPiece? rook = board[rookX, From.Y];
 			if (rook == null) return false;
@@ -82,7 +77,6 @@ namespace Chezz.Game.Games.Chess
 			board[From.X, From.Y] = null;
 			board[To.X, To.Y] = king;
 
-			// Rook jumps to the square the king passed over
 			board[rookX, From.Y] = null;
 			board[From.X + direction, From.Y] = rook;
 

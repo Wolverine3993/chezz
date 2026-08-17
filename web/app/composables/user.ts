@@ -3,10 +3,12 @@ import { api, schemas } from "./api";
 
 type User = z.infer<typeof schemas.InfoResponse>;
 
+import { Style, Avatar } from "@dicebear/core";
+import lorelei from "@dicebear/styles/lorelei.json";
+
 export function useUser() {
   const { data, status, error, refresh } = useAsyncData<User | null>(
     "user",
-    // 401/404 treated as "no user"
     () => api.Identity_GetInfo().catch(() => null),
     { default: () => null },
   );
@@ -20,10 +22,19 @@ export function useUser() {
   }
 
   async function logout() {
-    // No logout endpoint in the API yet; clear the cookie server-side when one
-    // exists. For now just drop the local state.
     user.value = null;
   }
 
-  return { user, isLoggedIn, status, error, refresh, login, logout };
+  const style = new Style(lorelei);
+
+  const svg = computed(() => {
+    if(!user.value) return undefined;
+    const avatar = new Avatar(style, {
+      seed: user.value.email,
+    });
+
+    return `data:image/svg+xml;utf8,${encodeURIComponent(avatar.toString())}`;
+  });
+
+  return { user, isLoggedIn, svg, status, error, refresh, login, logout };
 }

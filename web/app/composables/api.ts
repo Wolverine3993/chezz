@@ -2,14 +2,20 @@ import { makeApi, Zodios, type ZodiosOptions } from "@zodios/core";
 import { z } from "zod";
 
 const RelationshipRequest = z.object({ username: z.string() });
+const PlayerMetadata = z.object({
+  name: z.string(),
+  elo: z.number().int(),
+  imageUrl: z.string(),
+});
 const LobbyInformation = z.object({
   playerUsernames: z.array(z.string()),
+  players: z.array(PlayerMetadata),
   gameId: z.string().uuid().nullish(),
   isPrivate: z.boolean(),
 });
 const PackedBoardState = z.object({
   packedBoard: z.string(),
-  imageUrls: z.record(z.string()),
+  imageUrls: z.record(z.string(), z.string()),
 });
 const PieceColor = z.enum(["White", "Black"]);
 const ChessGameResult = z.union([
@@ -23,6 +29,9 @@ const ChessGameState = z.object({
   yourTurn: z.boolean(),
   yourColor: PieceColor,
   gameResult: ChessGameResult,
+  moveHistory: z.array(z.string()),
+  whitePlayer: PlayerMetadata.nullable(),
+  blackPlayer: PlayerMetadata.nullable(),
 });
 const ChessPosition = z.object({ x: z.number().int(), y: z.number().int() });
 const ChessMove = z.object({
@@ -139,6 +148,7 @@ const FriendDeclineRequest = z.object({ requestId: z.string() });
 
 export const schemas = {
   RelationshipRequest,
+  PlayerMetadata,
   LobbyInformation,
   PackedBoardState,
   PieceColor,
@@ -422,7 +432,7 @@ const endpoints = makeApi([
       {
         status: 400,
         description: `Bad Request`,
-        schema: z.record(z.array(z.string())),
+        schema: z.record(z.string(), z.array(z.string())),
       },
       {
         status: 404,
@@ -462,7 +472,7 @@ const endpoints = makeApi([
       {
         status: 400,
         description: `Bad Request`,
-        schema: z.record(z.array(z.string())),
+        schema: z.record(z.string(), z.array(z.string())),
       },
     ],
   },
@@ -497,7 +507,7 @@ const endpoints = makeApi([
       {
         status: 400,
         description: `Bad Request`,
-        schema: z.record(z.array(z.string())),
+        schema: z.record(z.string(), z.array(z.string())),
       },
     ],
   },
@@ -607,7 +617,7 @@ const endpoints = makeApi([
       {
         status: 404,
         description: `Not Found`,
-        schema: z.record(z.string()),
+        schema: z.record(z.string(), z.string()),
       },
     ],
   },

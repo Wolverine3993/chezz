@@ -1,6 +1,6 @@
 <template>
     <div v-if="currentChessState == 'waiting'"
-        class="w-screen h-screen grid grid-cols-2 bg-zinc-900 divide-y-2 divide-zinc-700">
+        class="grow grid grid-cols-2 divide-y-2 divide-zinc-700">
         <form @submit.prevent="createLobby" class="flex flex-col items-center justify-center">
             <div class="sm:mx-auto sm:w-full sm:max-w-sm">
                 <ChezzLogo class="mx-auto h-10 w-auto text-blue-600" />

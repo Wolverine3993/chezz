@@ -29,8 +29,6 @@ public class PolymorphicDiscriminatorSchemaFilter : ISchemaFilter
 		if (schema is not OpenApiSchema concrete)
 			return;
 
-		// With UseAllOfForInheritance the subtype schema is an allOf of the base
-		// plus an inline object; pin the discriminator on the inline part.
 		OpenApiSchema target = concrete.AllOf?
 			.OfType<OpenApiSchema>()
 			.FirstOrDefault(s => s.Properties is not null) ?? concrete;

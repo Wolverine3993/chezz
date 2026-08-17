@@ -3,9 +3,6 @@ using Microsoft.AspNetCore.Mvc.ApplicationModels;
 
 namespace Chezz.Conventions
 {
-	/// <summary>
-	/// Prepends a global route prefix (e.g. "api") to every controller route.
-	/// </summary>
 	public class RoutePrefixConvention : IApplicationModelConvention
 	{
 		private readonly AttributeRouteModel _prefix;

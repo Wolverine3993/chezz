@@ -70,10 +70,14 @@ public class Lobby
 
 	public List<IPlayer> Players { get { return _players.Values.ToList(); } }
 
-	public record LobbyInformation(List<string> PlayerUsernames, Guid? GameId, bool IsPrivate);
+	public record LobbyInformation(List<string> PlayerUsernames, List<PlayerMetadata> Players, Guid? GameId, bool IsPrivate);
 
 	public LobbyInformation GetLobbyInformation()
 	{
-		return new LobbyInformation(_players.Select(v => v.Value.Username).ToList(), GameId, IsPrivate);
+		return new LobbyInformation(
+			_players.Select(v => v.Value.Username).ToList(),
+			_players.Select(v => v.Value.GetMetadata()).ToList(),
+			GameId,
+			IsPrivate);
 	}
 }

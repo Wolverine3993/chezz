@@ -1,4 +1,6 @@
-﻿namespace Chezz.Game.Games.Chess
+﻿using Chezz.Game.Players;
+
+namespace Chezz.Game.Games.Chess
 {
 	public class PackedBoardState
 	{
@@ -11,6 +13,9 @@
 		public required bool YourTurn { get; set; }
 		public required ChessPiece.PieceColor YourColor { get; set; }
 		public required ChessGameResult GameResult { get; set; }
+		public required List<string> MoveHistory { get; set; }
+		public required PlayerMetadata? WhitePlayer { get; set; }
+		public required PlayerMetadata? BlackPlayer { get; set; }
 	}
 
 	public enum ChessGameResult

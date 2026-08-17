@@ -3,7 +3,6 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Chezz.Game.Games.Chess;
 
-// Marks empty board squares as nullable so they pass schema validation
 public class ChessGameStateSchemaFilter : ISchemaFilter
 {
 	public void Apply(IOpenApiSchema schema, SchemaFilterContext context)
@@ -16,7 +15,7 @@ public class ChessGameStateSchemaFilter : ISchemaFilter
 			board.Items is OpenApiSchema row &&
 			row.Items is { } cellRef)
 		{
-			// A $ref cannot be nullable directly, so wrap it in a nullable allOf
+
 			row.Items = new OpenApiSchema
 			{
 				Type = JsonSchemaType.Null,
