@@ -75,6 +75,7 @@ namespace Chezz.Controllers
             {
                 await _userRelationshipManager.MakeFriendsAsync(user1, user2);
                 await _userRelationshipManager.RemoveFriendRequestAsync(user2, user1);
+                await _notificationManager.RemoveFriendRequestNotificationAsync(user2, user1);
 
                 return TypedResults.Ok();
             }

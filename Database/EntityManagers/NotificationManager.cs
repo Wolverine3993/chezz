@@ -55,5 +55,18 @@ namespace Chezz.Database.EntityManagers
 
             return notification;
         }
+
+        public async Task RemoveFriendRequestNotificationAsync(ChezzUser userFrom, ChezzUser userTo)
+        {
+            var notification = await _dbContext.Notifications
+                .Where(notification => notification.UserId == userTo.Id && notification.Content == $"You have recieved a friend request from {userFrom.UserName}.")
+                .FirstOrDefaultAsync();
+
+            if (notification is not null)
+            {
+                _dbContext.Remove(notification);
+                await _dbContext.SaveChangesAsync();
+            }
+        }
     }
 }
