@@ -81,6 +81,49 @@
         }
       }
     },
+    "/api/games/chess/lobby/send-request": {
+      "post": {
+        "tags": [
+          "Chess"
+        ],
+        "operationId": "Chess_SendRequest",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RelationshipRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RelationshipRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RelationshipRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
     "/api/games/chess/lobby/{lobbyId}/status": {
       "get": {
         "tags": [
@@ -258,7 +301,20 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/ChessMove"
+                    "oneOf": [
+                      {
+                        "$ref": "#/components/schemas/NormalChessMove"
+                      },
+                      {
+                        "$ref": "#/components/schemas/EnPassantChessMove"
+                      },
+                      {
+                        "$ref": "#/components/schemas/CastlingChessMove"
+                      },
+                      {
+                        "$ref": "#/components/schemas/PromotionChessMove"
+                      }
+                    ]
                   }
                 }
               },
@@ -266,7 +322,20 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/ChessMove"
+                    "oneOf": [
+                      {
+                        "$ref": "#/components/schemas/NormalChessMove"
+                      },
+                      {
+                        "$ref": "#/components/schemas/EnPassantChessMove"
+                      },
+                      {
+                        "$ref": "#/components/schemas/CastlingChessMove"
+                      },
+                      {
+                        "$ref": "#/components/schemas/PromotionChessMove"
+                      }
+                    ]
                   }
                 }
               },
@@ -274,7 +343,20 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/ChessMove"
+                    "oneOf": [
+                      {
+                        "$ref": "#/components/schemas/NormalChessMove"
+                      },
+                      {
+                        "$ref": "#/components/schemas/EnPassantChessMove"
+                      },
+                      {
+                        "$ref": "#/components/schemas/CastlingChessMove"
+                      },
+                      {
+                        "$ref": "#/components/schemas/PromotionChessMove"
+                      }
+                    ]
                   }
                 }
               }
@@ -304,17 +386,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ChessMove"
+                "$ref": "#/components/schemas/ChessMoveChessPieceChessGameStateChessGameStoreChessGameImplementationMoveRequest"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/ChessMove"
+                "$ref": "#/components/schemas/ChessMoveChessPieceChessGameStateChessGameStoreChessGameImplementationMoveRequest"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/ChessMove"
+                "$ref": "#/components/schemas/ChessMoveChessPieceChessGameStateChessGameStoreChessGameImplementationMoveRequest"
               }
             }
           }
@@ -748,6 +830,232 @@
           }
         }
       }
+    },
+    "/api/notificationList": {
+      "get": {
+        "tags": [
+          "Notification"
+        ],
+        "operationId": "Notification_GetNotifications",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Notification"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/relationship/get-friends": {
+      "get": {
+        "tags": [
+          "UserRelationship"
+        ],
+        "operationId": "UserRelationship_GetFriends",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FriendResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/relationship/get-friend-requests": {
+      "get": {
+        "tags": [
+          "UserRelationship"
+        ],
+        "operationId": "UserRelationship_GetFriendRequests",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FriendRequest"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/relationship/add-friend": {
+      "post": {
+        "tags": [
+          "UserRelationship"
+        ],
+        "operationId": "UserRelationship_AddFriendRequest",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RelationshipRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RelationshipRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RelationshipRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/relationship/accept-friend-request": {
+      "post": {
+        "tags": [
+          "UserRelationship"
+        ],
+        "operationId": "UserRelationship_AcceptFriendRequest",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FriendAcceptRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FriendAcceptRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/FriendAcceptRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/relationship/decline-friend-request": {
+      "post": {
+        "tags": [
+          "UserRelationship"
+        ],
+        "operationId": "UserRelationship_DeclineFriendRequest",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FriendDeclineRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FriendDeclineRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/FriendDeclineRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/relationship/remove-friend": {
+      "delete": {
+        "tags": [
+          "UserRelationship"
+        ],
+        "operationId": "UserRelationship_RemoveFriend",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RelationshipRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RelationshipRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RelationshipRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -756,90 +1064,155 @@
         "required": [
           "accessToken",
           "expiresIn",
-          "refreshToken"
+          "refreshToken",
+          "tokenType"
         ],
         "type": "object",
         "properties": {
           "tokenType": {
             "type": "string",
-            "nullable": true,
             "readOnly": true
           },
           "accessToken": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "expiresIn": {
             "type": "integer",
             "format": "int64"
           },
           "refreshToken": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           }
         },
         "additionalProperties": false
       },
+      "CastlingChessMove": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ChessMove"
+          },
+          {
+            "required": [
+              "kind",
+              "moveId"
+            ],
+            "type": "object",
+            "properties": {
+              "moveId": {
+                "type": "string",
+                "readOnly": true
+              },
+              "kind": {
+                "enum": [
+                  "Castle"
+                ],
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        ]
+      },
+      "ChessGameResult": {
+        "enum": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
       "ChessGameState": {
         "required": [
-          "board",
+          "gameResult",
+          "packedBoard",
           "yourColor",
           "yourTurn"
         ],
         "type": "object",
         "properties": {
-          "board": {
-            "type": "array",
-            "items": {
-              "type": "array",
-              "items": {
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/ChessPiece"
-                  }
-                ],
-                "nullable": true
-              }
-            },
-            "nullable": true
+          "packedBoard": {
+            "$ref": "#/components/schemas/PackedBoardState"
           },
           "yourTurn": {
             "type": "boolean"
           },
           "yourColor": {
             "$ref": "#/components/schemas/PieceColor"
+          },
+          "gameResult": {
+            "$ref": "#/components/schemas/ChessGameResult"
           }
         },
         "additionalProperties": false
       },
       "ChessMove": {
+        "required": [
+          "from",
+          "kind",
+          "moveId",
+          "to"
+        ],
         "type": "object",
         "properties": {
+          "kind": {
+            "type": "string"
+          },
           "from": {
             "$ref": "#/components/schemas/ChessPosition"
           },
           "to": {
             "$ref": "#/components/schemas/ChessPosition"
+          },
+          "moveId": {
+            "type": "string",
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false,
+        "discriminator": {
+          "propertyName": "kind",
+          "mapping": {
+            "Normal": "#/components/schemas/NormalChessMove",
+            "EnPassant": "#/components/schemas/EnPassantChessMove",
+            "Castle": "#/components/schemas/CastlingChessMove",
+            "Promotion": "#/components/schemas/PromotionChessMove"
+          }
+        }
+      },
+      "ChessMoveChessPieceChessGameStateChessGameStoreChessGameImplementationMoveRequest": {
+        "required": [
+          "moveId"
+        ],
+        "type": "object",
+        "properties": {
+          "moveId": {
+            "type": "string"
           }
         },
         "additionalProperties": false
       },
       "ChessPiece": {
+        "required": [
+          "color",
+          "imageUrl",
+          "playerId",
+          "type"
+        ],
         "type": "object",
         "properties": {
           "type": {
             "$ref": "#/components/schemas/ChessPieceEnum"
           },
           "playerId": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "color": {
             "$ref": "#/components/schemas/PieceColor"
           },
           "imageUrl": {
             "type": "string",
-            "nullable": true,
             "readOnly": true
           }
         },
@@ -857,6 +1230,10 @@
         "type": "string"
       },
       "ChessPosition": {
+        "required": [
+          "x",
+          "y"
+        ],
         "type": "object",
         "properties": {
           "x": {
@@ -870,6 +1247,103 @@
         },
         "additionalProperties": false
       },
+      "ChezzUser": {
+        "required": [
+          "accessFailedCount",
+          "emailConfirmed",
+          "id",
+          "lockoutEnabled",
+          "phoneNumberConfirmed",
+          "twoFactorEnabled"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "userName": {
+            "type": "string",
+            "nullable": true
+          },
+          "normalizedUserName": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "normalizedEmail": {
+            "type": "string",
+            "nullable": true
+          },
+          "emailConfirmed": {
+            "type": "boolean"
+          },
+          "passwordHash": {
+            "type": "string",
+            "nullable": true
+          },
+          "securityStamp": {
+            "type": "string",
+            "nullable": true
+          },
+          "concurrencyStamp": {
+            "type": "string",
+            "nullable": true
+          },
+          "phoneNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "phoneNumberConfirmed": {
+            "type": "boolean"
+          },
+          "twoFactorEnabled": {
+            "type": "boolean"
+          },
+          "lockoutEnd": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "lockoutEnabled": {
+            "type": "boolean"
+          },
+          "accessFailedCount": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "EnPassantChessMove": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ChessMove"
+          },
+          {
+            "required": [
+              "kind",
+              "moveId"
+            ],
+            "type": "object",
+            "properties": {
+              "moveId": {
+                "type": "string",
+                "readOnly": true
+              },
+              "kind": {
+                "enum": [
+                  "EnPassant"
+                ],
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        ]
+      },
       "ForgotPasswordRequest": {
         "required": [
           "email"
@@ -877,13 +1351,276 @@
         "type": "object",
         "properties": {
           "email": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "FriendAcceptRequest": {
+        "required": [
+          "requestId"
+        ],
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "FriendDeclineRequest": {
+        "required": [
+          "requestId"
+        ],
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "FriendRequest": {
+        "required": [
+          "id",
+          "userFrom",
+          "userFromId",
+          "userTo",
+          "userToId"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "userFromId": {
+            "type": "string"
+          },
+          "userFrom": {
+            "$ref": "#/components/schemas/ChezzUser"
+          },
+          "userToId": {
+            "type": "string"
+          },
+          "userTo": {
+            "$ref": "#/components/schemas/ChezzUser"
+          }
+        },
+        "additionalProperties": false
+      },
+      "FriendResponse": {
+        "required": [
+          "id"
+        ],
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "nullable": true
+          },
+          "id": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "HttpValidationProblemDetails": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ProblemDetails"
+          },
+          {
+            "required": [
+              "errors"
+            ],
+            "type": "object",
+            "properties": {
+              "errors": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "additionalProperties": { }
+          }
+        ]
+      },
+      "InfoRequest": {
+        "type": "object",
+        "properties": {
+          "newEmail": {
+            "type": "string",
+            "nullable": true
+          },
+          "newPassword": {
+            "type": "string",
+            "nullable": true
+          },
+          "oldPassword": {
             "type": "string",
             "nullable": true
           }
         },
         "additionalProperties": false
       },
-      "HttpValidationProblemDetails": {
+      "InfoResponse": {
+        "required": [
+          "email",
+          "isEmailConfirmed",
+          "username"
+        ],
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "isEmailConfirmed": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "LobbyInformation": {
+        "required": [
+          "isPrivate",
+          "playerUsernames"
+        ],
+        "type": "object",
+        "properties": {
+          "playerUsernames": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "gameId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "isPrivate": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "LoginRequest": {
+        "required": [
+          "password",
+          "username"
+        ],
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "NormalChessMove": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ChessMove"
+          },
+          {
+            "required": [
+              "kind",
+              "moveId"
+            ],
+            "type": "object",
+            "properties": {
+              "moveId": {
+                "type": "string",
+                "readOnly": true
+              },
+              "kind": {
+                "enum": [
+                  "Normal"
+                ],
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        ]
+      },
+      "Notification": {
+        "required": [
+          "callbackId",
+          "content",
+          "id",
+          "notificationType",
+          "title",
+          "userId"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "notificationType": {
+            "$ref": "#/components/schemas/NotificationType"
+          },
+          "title": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          },
+          "callbackId": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "NotificationType": {
+        "enum": [
+          0,
+          1
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
+      "PackedBoardState": {
+        "required": [
+          "imageUrls",
+          "packedBoard"
+        ],
+        "type": "object",
+        "properties": {
+          "packedBoard": {
+            "type": "string"
+          },
+          "imageUrls": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "PieceColor": {
+        "enum": [
+          "White",
+          "Black"
+        ],
+        "type": "string"
+      },
+      "ProblemDetails": {
         "type": "object",
         "properties": {
           "type": {
@@ -906,100 +1643,40 @@
           "instance": {
             "type": "string",
             "nullable": true
-          },
-          "errors": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            "nullable": true
           }
         },
         "additionalProperties": { }
       },
-      "InfoRequest": {
-        "type": "object",
-        "properties": {
-          "newEmail": {
-            "type": "string",
-            "nullable": true
+      "PromotionChessMove": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ChessMove"
           },
-          "newPassword": {
-            "type": "string",
-            "nullable": true
-          },
-          "oldPassword": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "InfoResponse": {
-        "type": "object",
-        "properties": {
-          "username": {
-            "type": "string",
-            "nullable": true
-          },
-          "email": {
-            "type": "string",
-            "nullable": true
-          },
-          "isEmailConfirmed": {
-            "type": "boolean"
-          }
-        },
-        "additionalProperties": false
-      },
-      "LobbyInformation": {
-        "type": "object",
-        "properties": {
-          "playerUsernames": {
-            "type": "array",
-            "items": {
-              "type": "string"
+          {
+            "required": [
+              "kind",
+              "moveId",
+              "promotionPiece"
+            ],
+            "type": "object",
+            "properties": {
+              "promotionPiece": {
+                "$ref": "#/components/schemas/ChessPiece"
+              },
+              "moveId": {
+                "type": "string",
+                "readOnly": true
+              },
+              "kind": {
+                "enum": [
+                  "Promotion"
+                ],
+                "type": "string"
+              }
             },
-            "nullable": true
-          },
-          "gameId": {
-            "type": "string",
-            "format": "uuid",
-            "nullable": true
-          },
-          "isPrivate": {
-            "type": "boolean"
+            "additionalProperties": false
           }
-        },
-        "additionalProperties": false
-      },
-      "LoginRequest": {
-        "required": [
-          "password",
-          "username"
-        ],
-        "type": "object",
-        "properties": {
-          "username": {
-            "type": "string",
-            "nullable": true
-          },
-          "password": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "PieceColor": {
-        "enum": [
-          "White",
-          "Black"
-        ],
-        "type": "string"
+        ]
       },
       "RefreshRequest": {
         "required": [
@@ -1008,8 +1685,7 @@
         "type": "object",
         "properties": {
           "refreshToken": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           }
         },
         "additionalProperties": false
@@ -1023,16 +1699,25 @@
         "type": "object",
         "properties": {
           "username": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "email": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "password": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "RelationshipRequest": {
+        "required": [
+          "username"
+        ],
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string"
           }
         },
         "additionalProperties": false
@@ -1044,8 +1729,7 @@
         "type": "object",
         "properties": {
           "email": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           }
         },
         "additionalProperties": false
@@ -1059,16 +1743,13 @@
         "type": "object",
         "properties": {
           "email": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "resetCode": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "newPassword": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           }
         },
         "additionalProperties": false
@@ -1081,6 +1762,12 @@
     },
     {
       "name": "Identity"
+    },
+    {
+      "name": "Notification"
+    },
+    {
+      "name": "UserRelationship"
     }
   ]
 }

@@ -6,7 +6,7 @@ namespace Chezz.Game
 	public sealed class GameRegistry<TMove, TPiece, TGameStatus, TGs, TGi>
 	where TPiece : IPiece
 	where TMove : IMove
-	where TGs : IGameState<TPiece, TMove>
+	where TGs : IGameState<TMove>
 	where TGi : IGameImplementation<TPiece, TMove, TGameStatus, TGs>
 	{
 		private readonly ConcurrentDictionary<Guid, Game<TMove, TPiece, TGameStatus, TGs, TGi>> games = new();

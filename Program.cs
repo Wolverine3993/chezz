@@ -1,5 +1,5 @@
-
 using Chezz.Database;
+using Chezz.Database.EntityManagers;
 using Chezz.Database.Models;
 using Chezz.Game;
 using Chezz.Game.Games.Chess;
@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection;
+using System.Text.Json.Serialization;
 
 namespace Chezz
 {
@@ -27,6 +29,8 @@ namespace Chezz
 
 
 			builder.Services.AddDbContext<ChezzDbContext>(options => options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+			builder.Services.AddScoped<UserRelationshipManager>();
+			builder.Services.AddScoped<NotificationManager>();
 
 			builder.Services.AddSmtpConfiguration(builder.Configuration.GetRequiredSection("SmtpConfiguration"));
 			builder.Services.AddSingleton<IEmailSender, EmailSender>();
@@ -51,6 +55,20 @@ namespace Chezz
 					var action = descriptor.AttributeRouteInfo?.Name ?? descriptor.ActionName;
 					return $"{descriptor.ControllerName}_{action}";
 				});
+
+				options.UseAllOfForInheritance();
+				options.UseOneOfForPolymorphism();
+				options.SelectDiscriminatorNameUsing(baseType =>
+					baseType.GetCustomAttribute<JsonPolymorphicAttribute>()?.TypeDiscriminatorPropertyName);
+				options.SelectDiscriminatorValueUsing(subType =>
+					subType.BaseType?
+						.GetCustomAttributes<JsonDerivedTypeAttribute>()
+						.FirstOrDefault(a => a.DerivedType == subType)?
+						.TypeDiscriminator?.ToString());
+
+				options.SupportNonNullableReferenceTypes();
+				options.SchemaFilter<Chezz.OpenApi.PolymorphicDiscriminatorSchemaFilter>();
+				options.SchemaFilter<Chezz.OpenApi.RequireNonNullablePropertiesSchemaFilter>();
 
 				options.SchemaFilter<ChessGameStateSchemaFilter>();
 			});

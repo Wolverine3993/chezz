@@ -1,5 +1,4 @@
 ﻿using Chezz.Database.Models;
-using Chezz.Identity;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
@@ -28,7 +27,7 @@ namespace Chezz.Controllers
 
         [HttpPost("register", Name = "Register")]
         public async Task<Results<Ok, BadRequest<Dictionary<string, string[]>>>> Register(
-            [FromBody] Chezz.Identity.RegisterRequest registration,
+            [FromBody] RequestSchemas.Identity.RegisterRequest registration,
             [FromServices] IServiceProvider sp)
         {
             var userManager = sp.GetRequiredService<UserManager<ChezzUser>>();
@@ -79,7 +78,7 @@ namespace Chezz.Controllers
 
         [HttpPost("login", Name = "Login")]
         public async Task<Results<Ok<AccessTokenResponse>, EmptyHttpResult, ProblemHttpResult>> Login(
-            [FromBody] Chezz.Identity.LoginRequest login,
+            [FromBody] RequestSchemas.Identity.LoginRequest login,
             [FromQuery] bool? useCookies,
             [FromQuery] bool? useSessionCookies,
             [FromServices] IServiceProvider sp)
