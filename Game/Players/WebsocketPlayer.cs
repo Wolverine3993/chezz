@@ -28,6 +28,7 @@ namespace Chezz.Game.Players
 		public string Id => _id;
 
 		public string Username => _user.UserName ?? _user.Email ?? "Unknown user";
+		public string UserId => _user.Id ?? "Unknown user";
 
 		public async Task Notify()
 		{

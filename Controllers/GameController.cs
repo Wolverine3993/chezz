@@ -121,7 +121,7 @@ public abstract class GameController<TMove, TPiece, TGameStatus, TGs, TGi> : Con
 	public async Task ChangeLobbyPrivacy(Guid lobbyId, [FromQuery] bool isPrivate)
 	{
 		var (lobby, user) = await GetLobbyUser(lobbyId);
-		if (!lobby.Players.Any(player => player.Id == user.Id)) throw new ChezzError(StatusCodes.Status401Unauthorized, "User is not in lobby");
+		if (!lobby.Players.Any(player => player.UserId == user.Id)) throw new ChezzError(StatusCodes.Status401Unauthorized, "User is not in lobby");
 
         lobby.ChangePrivacy(isPrivate);
 	}
