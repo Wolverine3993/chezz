@@ -4,19 +4,19 @@
     <div class="flex w-full flex-col items-center space-y-4 sm:items-end">
       <!-- Notification panel, dynamically insert this into the live region when it needs to be displayed -->
       <transition enter-active-class="transform ease-out duration-300 transition" enter-from-class="translate-y-2 opacity-0 sm:translate-y-0 sm:translate-x-2" enter-to-class="translate-y-0 sm:translate-x-0" leave-active-class="transition ease-in duration-100" leave-from-class="" leave-to-class="opacity-0">
-        <div v-if="show" class="pointer-events-auto w-full max-w-sm rounded-lg bg-gray-800 shadow-lg outline-1 -outline-offset-1 outline-white/10">
+        <div v-if="show" class="pointer-events-auto w-full max-w-sm rounded-lg bg-zinc-800 shadow-lg outline-1 -outline-offset-1 outline-white/10">
           <div class="p-4">
             <div class="flex items-start">
               <div class="shrink-0">
-                <CheckCircleIcon v-if="state === 'Success'" class="size-6 text-green-400" aria-hidden="true" />
-                <XCircleIcon v-else-if="state === 'Fail'" class="size-6 text-red-400" aria-hidden="true" />
+                <CheckCircleIcon v-if="state === 'Success'" class="size-6 text-emerald-400" aria-hidden="true" />
+                <XCircleIcon v-else-if="state === 'Fail'" class="size-6 text-rose-400" aria-hidden="true" />
               </div>
               <div class="ml-3 w-0 flex-1 pt-0.5">
                 <p class="text-sm font-medium text-white">{{ titleRef }}</p>
-                <p class="mt-1 text-sm text-gray-400">{{ contentRef }}</p>
+                <p class="mt-1 text-sm text-zinc-400">{{ contentRef }}</p>
               </div>
               <div class="ml-4 flex shrink-0">
-                <button type="button" @click="show = false" class="inline-flex rounded-md text-gray-400 hover:text-white focus:outline-2 focus:outline-offset-2 focus:outline-indigo-500">
+                <button type="button" @click="show = false" class="inline-flex rounded-md text-zinc-400 hover:text-white focus:outline-2 focus:outline-offset-2 focus:outline-blue-500">
                   <span class="sr-only">Close</span>
                   <XMarkIcon class="size-5" aria-hidden="true" />
                 </button>

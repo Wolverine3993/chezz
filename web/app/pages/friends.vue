@@ -33,6 +33,7 @@
         />
       </div>
     </div>
+    <InfoNotification ref="friendNotification" />
   </div>
 </template>
 
@@ -145,9 +146,15 @@ async function addFriend(username: string) {
       username: username,
     });
 
-    friendNotification.value.succeed(username);
+    friendNotification.value.succeed(
+      "Friend request sent",
+      `Sent a friend request to ${username}.`,
+    );
   } catch {
-    friendNotification.value.fail(username);
+    friendNotification.value.fail(
+      "Couldn't send request",
+      `We couldn't send a friend request to ${username}.`,
+    );
   }
 }
 </script>

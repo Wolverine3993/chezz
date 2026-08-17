@@ -3,9 +3,6 @@ import { api, schemas } from "./api";
 
 type User = z.infer<typeof schemas.InfoResponse>;
 
-import { Style, Avatar } from "@dicebear/core";
-import lorelei from "@dicebear/styles/lorelei.json";
-
 export function useUser() {
   const { data, status, error, refresh } = useAsyncData<User | null>(
     "user",
@@ -25,15 +22,11 @@ export function useUser() {
     user.value = null;
   }
 
-  const style = new Style(lorelei);
+  const { avatarUrl } = useAvatar();
 
   const svg = computed(() => {
     if(!user.value) return undefined;
-    const avatar = new Avatar(style, {
-      seed: user.value.email,
-    });
-
-    return `data:image/svg+xml;utf8,${encodeURIComponent(avatar.toString())}`;
+    return avatarUrl(user.value.email);
   });
 
   return { user, isLoggedIn, svg, status, error, refresh, login, logout };
