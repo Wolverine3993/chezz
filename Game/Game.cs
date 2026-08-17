@@ -65,7 +65,6 @@ public class Game<TMove, TPiece, TGameSerializedState, TGameState, TGameImplemen
 		bool result = GameStore.AddMoveByPlayer(move, player);
 		if (!result) return false;
 
-		// Increment turn
 		GameImplementation.OnMakeMove(GameStore, player, move);
 		currentMoves = null;
 		await Notify();

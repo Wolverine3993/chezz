@@ -3,6 +3,7 @@ using Chezz.Database.EntityManagers;
 using Chezz.Database.Models;
 using Chezz.Game;
 using Chezz.Game.Games.Chess;
+using Chezz.Notifications;
 using Chezz.SMTP;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
@@ -23,7 +24,6 @@ namespace Chezz
 			builder.Services.AddLogging();
 			builder.Services.AddControllers(options =>
 			{
-				// Serve every controller under a global "/api" prefix.
 				options.Conventions.Add(new Conventions.RoutePrefixConvention("api"));
 			});
 
@@ -31,6 +31,7 @@ namespace Chezz
 			builder.Services.AddDbContext<ChezzDbContext>(options => options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 			builder.Services.AddScoped<UserRelationshipManager>();
 			builder.Services.AddScoped<NotificationManager>();
+			builder.Services.AddSingleton<NotificationSocketRegistry>();
 
 			builder.Services.AddSmtpConfiguration(builder.Configuration.GetRequiredSection("SmtpConfiguration"));
 			builder.Services.AddSingleton<IEmailSender, EmailSender>();
@@ -44,9 +45,6 @@ namespace Chezz
 			builder.Services.AddEndpointsApiExplorer();
 			builder.Services.AddSwaggerGen(options =>
 			{
-				// operationId => "{ConcreteController}_{RouteName ?? ActionName}"
-				// The controller prefix keeps ids unique across concrete controllers
-				// that inherit endpoints from the generic GameController base.
 				options.CustomOperationIds(apiDescription =>
 				{
 					if (apiDescription.ActionDescriptor is not ControllerActionDescriptor descriptor)
@@ -100,7 +98,6 @@ namespace Chezz
 			// Configure the HTTP request pipeline.
 			if (app.Environment.IsDevelopment())
 			{
-				// Apply any pending EF Core migrations automatically in development.
 				using (var scope = app.Services.CreateScope())
 				{
 					var db = scope.ServiceProvider.GetRequiredService<ChezzDbContext>();

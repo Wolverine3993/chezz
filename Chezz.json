@@ -1125,8 +1125,11 @@
       },
       "ChessGameState": {
         "required": [
+          "blackPlayer",
           "gameResult",
+          "moveHistory",
           "packedBoard",
+          "whitePlayer",
           "yourColor",
           "yourTurn"
         ],
@@ -1143,6 +1146,18 @@
           },
           "gameResult": {
             "$ref": "#/components/schemas/ChessGameResult"
+          },
+          "moveHistory": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "whitePlayer": {
+            "$ref": "#/components/schemas/PlayerMetadata"
+          },
+          "blackPlayer": {
+            "$ref": "#/components/schemas/PlayerMetadata"
           }
         },
         "additionalProperties": false
@@ -1491,6 +1506,7 @@
       "LobbyInformation": {
         "required": [
           "isPrivate",
+          "players",
           "playerUsernames"
         ],
         "type": "object",
@@ -1499,6 +1515,12 @@
             "type": "array",
             "items": {
               "type": "string"
+            }
+          },
+          "players": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PlayerMetadata"
             }
           },
           "gameId": {
@@ -1620,6 +1642,27 @@
           "Black"
         ],
         "type": "string"
+      },
+      "PlayerMetadata": {
+        "required": [
+          "elo",
+          "imageUrl",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "elo": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "imageUrl": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
       },
       "ProblemDetails": {
         "type": "object",

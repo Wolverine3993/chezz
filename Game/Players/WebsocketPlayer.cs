@@ -30,6 +30,13 @@ namespace Chezz.Game.Players
 		public string Username => _user.UserName ?? _user.Email ?? "Unknown user";
 		public string UserId => _user.Id ?? "Unknown user";
 
+		public PlayerMetadata GetMetadata()
+		{
+			string seed = _user.Email ?? _user.UserName ?? _user.Id;
+			string imageUrl = $"https://api.dicebear.com/9.x/lorelei/svg?seed={Uri.EscapeDataString(seed)}";
+			return new PlayerMetadata(Username, 1200, imageUrl);
+		}
+
 		private CancellationTokenSource? _notifyDebounceCts;
 		private readonly Lock _notifyDebounceLock = new();
 		private const int NotifyDebounceMilliseconds = 25;
@@ -56,7 +63,6 @@ namespace Chezz.Game.Players
 			}
 			catch (OperationCanceledException)
 			{
-				// A newer notify arrived within the debounce window; this one is superseded.
 				return;
 			}
 
@@ -96,7 +102,6 @@ namespace Chezz.Game.Players
 			}
 			catch
 			{
-				// socket may already be gone; ignore
 			}
 			finally
 			{

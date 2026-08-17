@@ -70,7 +70,6 @@ public class ChessGameImplementation : IGameImplementation<ChessPiece, ChessMove
 			}
 		}
 
-		// Drop moves that leave the mover's own king in check
 		moves.RemoveAll(move => WouldLeaveKingInCheck(board, move, player.Id, width, height));
 
 		return moves;
@@ -104,14 +103,12 @@ public class ChessGameImplementation : IGameImplementation<ChessPiece, ChessMove
 			}
 		}
 
-		// No king on the board
 		return false;
 	}
 
 	private static bool IsSquareAttacked(ChessPiece?[,] board, int tx, int ty,
 		ChessPiece.PieceColor defenderColor, string defenderPlayerId, int width, int height)
 	{
-		// Attacking pawn sits one rank in front of the square
 		int opponentDirection = defenderColor == ChessPiece.PieceColor.White ? 1 : -1;
 		int pawnRow = ty - opponentDirection;
 		foreach (int px in stackalloc[] { tx - 1, tx + 1 })
@@ -121,7 +118,6 @@ public class ChessGameImplementation : IGameImplementation<ChessPiece, ChessMove
 			if (IsEnemy(p, defenderPlayerId) && p!.Type == ChessPiece.ChessPieceEnum.Pawn) return true;
 		}
 
-		// Knight attacks
 		foreach ((int dx, int dy) in KnightOffsets)
 		{
 			int nx = tx + dx;
@@ -131,7 +127,6 @@ public class ChessGameImplementation : IGameImplementation<ChessPiece, ChessMove
 			if (IsEnemy(p, defenderPlayerId) && p!.Type == ChessPiece.ChessPieceEnum.Knight) return true;
 		}
 
-		// Adjacent enemy king
 		foreach ((int dx, int dy) in KingOffsets)
 		{
 			int nx = tx + dx;
@@ -141,11 +136,9 @@ public class ChessGameImplementation : IGameImplementation<ChessPiece, ChessMove
 			if (IsEnemy(p, defenderPlayerId) && p!.Type == ChessPiece.ChessPieceEnum.King) return true;
 		}
 
-		// Orthogonal sliders (rook or queen)
 		if (IsAttackedBySlider(board, tx, ty, defenderPlayerId, RookDirections,
 			ChessPiece.ChessPieceEnum.Rook, width, height)) return true;
 
-		// Diagonal sliders (bishop or queen)
 		if (IsAttackedBySlider(board, tx, ty, defenderPlayerId, BishopDirections,
 			ChessPiece.ChessPieceEnum.Bishop, width, height)) return true;
 
@@ -204,7 +197,6 @@ public class ChessGameImplementation : IGameImplementation<ChessPiece, ChessMove
 	private static void AddCastlingMoves(ChessGameStore gameStore, ChessPiece?[,] board, List<ChessMove> moves,
 		int x, int y, ChessPiece king, int width, int height)
 	{
-		// King must not have moved and must not be in check
 		if (gameStore.HasMovedFrom((x, y))) return;
 		if (IsSquareAttacked(board, x, y, king.Color, king.PlayerId, width, height)) return;
 
@@ -215,7 +207,6 @@ public class ChessGameImplementation : IGameImplementation<ChessPiece, ChessMove
 			if (rook == null || rook.Type != ChessPiece.ChessPieceEnum.Rook || rook.PlayerId != king.PlayerId) continue;
 			if (gameStore.HasMovedFrom((rookX, y))) continue;
 
-			// Squares between king and rook must be empty
 			bool pathClear = true;
 			for (int ix = Math.Min(x, rookX) + 1; ix < Math.Max(x, rookX); ix++)
 			{
@@ -227,7 +218,6 @@ public class ChessGameImplementation : IGameImplementation<ChessPiece, ChessMove
 			int step2 = x + (2 * direction);
 			if (!InBounds(step2, y, width, height)) continue;
 
-			// King may not pass through or land on an attacked square
 			if (IsSquareAttacked(board, step1, y, king.Color, king.PlayerId, width, height)) continue;
 			if (IsSquareAttacked(board, step2, y, king.Color, king.PlayerId, width, height)) continue;
 
@@ -281,7 +271,6 @@ public class ChessGameImplementation : IGameImplementation<ChessPiece, ChessMove
 	private static void AddPawnMoves(ChessGameStore gameStore, ChessPiece?[,] board, List<ChessMove> moves,
 		int x, int y, ChessPiece piece, int width, int height)
 	{
-		// White is at the bottom (high y) and advances toward y = 0
 		int direction = piece.Color == ChessPiece.PieceColor.White ? -1 : 1;
 		int startRow = piece.Color == ChessPiece.PieceColor.White ? height - 2 : 1;
 		int promotionRow = piece.Color == ChessPiece.PieceColor.White ? 0 : height - 1;
@@ -348,13 +337,11 @@ public class ChessGameImplementation : IGameImplementation<ChessPiece, ChessMove
 		ChessMove? last = gameStore.LastMove;
 		if (last == null) return false;
 
-		// Pawn to capture sits beside us on our own rank
 		ChessPiece? victim = board[captureX, y];
 		if (victim == null) return false;
 		if (victim.Type != ChessPiece.ChessPieceEnum.Pawn) return false;
 		if (victim.PlayerId == piece.PlayerId) return false;
 
-		// Victim must have advanced two squares last turn
 		return last.To.X == captureX && last.To.Y == y
 			&& last.From.X == captureX && last.From.Y == y + (2 * direction);
 	}
@@ -366,7 +353,8 @@ public class ChessGameImplementation : IGameImplementation<ChessPiece, ChessMove
 	}
 	public ChessGameState GetSerializedState(ChessGameStore gameStore, IPlayer player)
 	{
-		int playerIndex = gameStore.Lobby.Players.FindIndex(v => v.Id == player.Id);
+		var players = gameStore.Lobby.Players;
+		int playerIndex = players.FindIndex(v => v.Id == player.Id);
 
 		return new()
 		{
@@ -374,6 +362,9 @@ public class ChessGameImplementation : IGameImplementation<ChessPiece, ChessMove
 			YourTurn = CurrentTurn == playerIndex,
 			YourColor = playerIndex == 0 ? ChessPiece.PieceColor.White : ChessPiece.PieceColor.Black,
 			GameResult = DetermineResult(gameStore, player),
+			MoveHistory = gameStore.MoveHistory,
+			WhitePlayer = players.ElementAtOrDefault(0)?.GetMetadata(),
+			BlackPlayer = players.ElementAtOrDefault(1)?.GetMetadata(),
 		};
 	}
 
@@ -384,13 +375,10 @@ public class ChessGameImplementation : IGameImplementation<ChessPiece, ChessMove
 
 		IPlayer playerToMove = players[CurrentTurn];
 
-		// While the player to move still has a legal move, the game is ongoing.
 		if (GetValidMoves(gameStore, playerToMove).Count > 0) return ChessGameResult.NoResult;
 
-		// No legal moves: checkmate if in check, otherwise stalemate (draw).
 		if (!IsPlayerInCheck(gameStore, playerToMove)) return ChessGameResult.Draw;
 
-		// Checkmate: the player to move loses, everyone else wins.
 		return player.Id == playerToMove.Id ? ChessGameResult.Loss : ChessGameResult.Win;
 	}
 

@@ -13,6 +13,36 @@ public class ChessGameStore : IGameState<ChessMove>
 
 	public ChessMove? LastMove => moveList.Count > 0 ? moveList[^1].Item2 : null;
 
+	public List<string> MoveHistory => moveList.Select(entry => FormatMove(entry.Item2)).ToList();
+
+	private static string FormatMove(ChessMove move)
+	{
+		if (move is CastlingChessMove)
+		{
+			return move.To.X > move.From.X ? "O-O" : "O-O-O";
+		}
+
+		string notation = $"{SquareName(move.From)}{SquareName(move.To)}";
+		if (move is PromotionChessMove promotion)
+		{
+			notation += $"={PieceLetter(promotion.PromotionPiece.Type)}";
+		}
+
+		return notation;
+	}
+
+	private static string SquareName(ChessPosition position)
+		=> $"{(char)('a' + position.X)}{8 - position.Y}";
+
+	private static string PieceLetter(ChessPiece.ChessPieceEnum type) => type switch
+	{
+		ChessPiece.ChessPieceEnum.Queen => "Q",
+		ChessPiece.ChessPieceEnum.Rook => "R",
+		ChessPiece.ChessPieceEnum.Bishop => "B",
+		ChessPiece.ChessPieceEnum.Knight => "N",
+		_ => "",
+	};
+
 	public bool HasMovedFrom(ChessPosition position)
 	{
 		foreach ((IPlayer _, ChessMove move) in moveList)
@@ -38,7 +68,7 @@ public class ChessGameStore : IGameState<ChessMove>
 					x += skip;
 					continue;
 				}
-				int player = piece.ToUpper() == piece ? 0 : 1; // White if uppercase
+				int player = piece.ToUpper() == piece ? 0 : 1;
 
 				string pieceLowercase = piece.ToLower();
 				ChessPiece.ChessPieceEnum type = pieceLowercase switch

@@ -1,14 +1,16 @@
 ﻿using Chezz.Database.Models;
+using Chezz.Notifications;
 using Microsoft.EntityFrameworkCore;
 
 namespace Chezz.Database.EntityManagers
 {
-    public class NotificationManager(ChezzDbContext _dbContext)
+    public class NotificationManager(ChezzDbContext _dbContext, NotificationSocketRegistry _sockets)
     {
         async Task AddNotificationAsync(Notification notification)
         {
             await _dbContext.AddAsync(notification);
             await _dbContext.SaveChangesAsync();
+            await _sockets.NotifyAsync(notification.UserId);
         }
 
         public async Task AddFriendNotificationAsync(ChezzUser userFrom, ChezzUser userTo, FriendRequest request)
