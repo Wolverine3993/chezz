@@ -67,6 +67,7 @@ async function resetpassword() {
         router.push("/signin");
     } catch (e) {
         console.error(e);
+        notification.value.fail("Reset Password Failed", "Failed to reset password.");
     }
     finally {
         loading.value = false;

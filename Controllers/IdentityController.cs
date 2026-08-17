@@ -1,4 +1,5 @@
 ﻿using Chezz.Database.Models;
+using Chezz.SMTP;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
@@ -208,7 +209,7 @@ namespace Chezz.Controllers
                 var code = await userManager.GeneratePasswordResetTokenAsync(user);
                 code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
 
-                await emailSender.SendEmailAsync(user.Email!, "Reset your password", $"Please reset your password by <a href='http://localhost:3000/reset-password/{HtmlEncoder.Default.Encode(code)}'>clicking here</a>. If you didn't request a password reset, you can ignore this email.");
+                await emailSender.SendEmailAsync(user.Email!, "Reset your password", EmailFormatter.GetResetPasswordHTML($"http://localhost:3000/reset-password/{HtmlEncoder.Default.Encode(code)}"));
             }
 
             // Don't reveal that the user does not exist or is not confirmed, so don't return a 200 if we would have
@@ -335,7 +336,7 @@ namespace Chezz.Controllers
             var confirmEmailUrl = linkGenerator.GetUriByName(HttpContext, confirmEmailEndpointName, routeValues)
                 ?? throw new NotSupportedException($"Could not find endpoint named '{confirmEmailEndpointName}'.");
 
-            await emailSender.SendEmailAsync(email, "Confirm your email", $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(confirmEmailUrl)}'>clicking here</a>. If you didn't request this email confirmation, you can ignore this email.");
+            await emailSender.SendEmailAsync(email, "Confirm your email", EmailFormatter.GetConfirmEmailHTML(HtmlEncoder.Default.Encode(confirmEmailUrl)));
         }
 
         private static bool IsValidUsername(string username)
