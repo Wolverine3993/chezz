@@ -37,7 +37,7 @@ namespace Chezz.Controllers
             {
                 if (registerCode.Value != registration.RegisterCode)
                 {
-                    return TypedResults.Unauthorized();
+                    return CreateValidationProblem("RegisterCode", "Invalid registration code.");
                 }
             }
             var userManager = sp.GetRequiredService<UserManager<ChezzUser>>();
@@ -102,14 +102,19 @@ namespace Chezz.Controllers
             var user = await userManager.FindByNameAsync(login.Username) ?? await userManager.FindByEmailAsync(login.Username);
             if (user is null)
             {
-                return TypedResults.Problem($"User by username or email {login.Username} does not exist", statusCode: StatusCodes.Status401Unauthorized);
+                return TypedResults.Problem("Incorrect username or password.", statusCode: StatusCodes.Status401Unauthorized);
             }
 
             var result = await signInManager.PasswordSignInAsync(user, login.Password, isPersistent, lockoutOnFailure: true);
 
             if (!result.Succeeded)
             {
-                return TypedResults.Problem(result.ToString(), statusCode: StatusCodes.Status401Unauthorized);
+                var message = result.IsLockedOut
+                    ? "This account is locked. Please try again later."
+                    : result.IsNotAllowed
+                        ? "Please confirm your email before signing in."
+                        : "Incorrect username or password.";
+                return TypedResults.Problem(message, statusCode: StatusCodes.Status401Unauthorized);
             }
 
             // The signInManager already produced the needed response in the form of a cookie or bearer token.

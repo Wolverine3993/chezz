@@ -1,6 +1,5 @@
 # syntax=docker/dockerfile:1
 
-# ---- Build the Nuxt frontend ----
 FROM node:22-bookworm-slim AS web-build
 WORKDIR /src/web
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
@@ -10,7 +9,6 @@ RUN pnpm install --frozen-lockfile
 COPY web/ ./
 RUN pnpm build
 
-# ---- Build the .NET backend ----
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS api-build
 WORKDIR /src
 COPY Chezz.csproj ./
@@ -18,7 +16,6 @@ RUN dotnet restore Chezz.csproj
 COPY . ./
 RUN dotnet publish Chezz.csproj -c Release -o /app/api -p:OpenApiGenerateDocumentsOnBuild=false
 
-# ---- Runtime image ----
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 
 RUN apt-get update \

@@ -18,6 +18,7 @@
           <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <ChezzButton @click="matchmake">Matchmake</ChezzButton>
           </div>
+          <ErrorAlert :messages="matchmakeErrors" class="mt-4" />
         </div>
       </div>
 
@@ -50,9 +51,14 @@ api
   });
 
 const router = useRouter();
-function matchmake() {
-  api.Chess_Matchmake(undefined).then((lobbyId) => {
+const matchmakeErrors = ref<string[]>([]);
+async function matchmake() {
+  matchmakeErrors.value = [];
+  try {
+    const lobbyId = await api.Chess_Matchmake(undefined);
     router.push(`/chess/game/${lobbyId}`);
-  });
+  } catch (e) {
+    matchmakeErrors.value = extractApiErrors(e);
+  }
 }
 </script>

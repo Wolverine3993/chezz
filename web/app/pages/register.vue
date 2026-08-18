@@ -16,6 +16,7 @@
                 <div class="mt-10">
                     <div>
                         <form @submit.prevent="signin" class="space-y-6">
+                            <ErrorAlert :messages="errors" />
                             <div>
                                 <label for="username" class="block text-sm/6 font-medium text-zinc-100">Username</label>
                                 <div class="mt-2">
@@ -76,18 +77,20 @@ const email = ref();
 const password = ref();
 const registrationCode = ref();
 const loading = ref(false);
+const errors = ref<string[]>([]);
 
 const user = useUser();
 const router = useRouter();
 
 async function signin() {
     loading.value = true;
+    errors.value = [];
     try {
         await api.Identity_Register({ username: username.value, email: email.value, password: password.value, registerCode: registrationCode.value ?? "" });
         await user.login({ username: username.value, password: password.value });
-        router.push("/");
+        router.push("/signin");
     } catch(e) {
-        console.error(e);
+        errors.value = extractApiErrors(e);
     }
     
     finally {

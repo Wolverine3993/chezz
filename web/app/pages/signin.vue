@@ -16,6 +16,7 @@
                 <div class="mt-10">
                     <div>
                         <form @submit.prevent="signin" class="space-y-6">
+                            <ErrorAlert :messages="errors" />
                             <div>
                                 <label for="username" class="block text-sm/6 font-medium text-zinc-100">Username or Email</label>
                                 <div class="mt-2">
@@ -82,17 +83,19 @@ definePageMeta({
 const username = ref();
 const password = ref();
 const loading = ref(false);
+const errors = ref<string[]>([]);
 
 const user = useUser();
 const router = useRouter();
 
 async function signin() {
     loading.value = true;
+    errors.value = [];
     try {
         await user.login({ username: username.value, password: password.value });
         router.push("/");
     } catch (e) {
-        console.error(e);
+        errors.value = extractApiErrors(e);
     }
     finally {
         loading.value = false;

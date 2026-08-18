@@ -11,6 +11,7 @@
             <div class="mt-10 space-y-6 sm:mx-auto sm:w-full sm:max-w-sm">
 
                 <p class="block text-sm/6 font-medium text-gray-100 text-center">Click here to make a lobby.</p>
+                <ErrorAlert :messages="createErrors" />
                 <div>
                     <ChezzButton :loading="createLobbyLoading">Create lobby</ChezzButton>
                 </div>
@@ -33,6 +34,7 @@
                                 class="block w-full rounded-md bg-white/5 px-3 py-1.5 text-base text-white outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-500 sm:text-sm/6" />
                         </div>
                     </div>
+                    <ErrorAlert :messages="joinErrors" />
                     <div>
                         <ChezzButton>Join Lobby</ChezzButton>
                     </div>
@@ -51,22 +53,27 @@ const currentChessState = ref<ChessState>("waiting");
 const router = useRouter();
 
 const createLobbyLoading = ref(false);
+const createErrors = ref<string[]>([]);
 async function createLobby() {
     createLobbyLoading.value = true;
+    createErrors.value = [];
     try {
         const lobbyID = await api.Chess_CreateLobby(undefined);
         router.push(`/chess/game/${lobbyID}`);
     } catch (e) {
-        console.error(e);
+        createErrors.value = extractApiErrors(e);
+    } finally {
+        createLobbyLoading.value = false;
     }
-    createLobbyLoading.value = true;
 }
 
 const lobbyId = ref();
+const joinErrors = ref<string[]>([]);
 async function joinLobby(){
+    joinErrors.value = [];
     const uuidRegex = /^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$/
     if(!uuidRegex.test(lobbyId.value)) {
-        console.log("Invalid UUID");
+        joinErrors.value = ["Please enter a valid lobby ID."];
         return;
     }
 
@@ -74,7 +81,7 @@ async function joinLobby(){
         await api.Chess_GetLobbyStatus({params: {lobbyId: lobbyId.value}});
         router.push(`/chess/game/${lobbyId.value}`);
     } catch (e) {
-        console.log("Lobby not found");
+        joinErrors.value = extractApiErrors(e);
     }
 }
 </script>
