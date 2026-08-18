@@ -12,14 +12,20 @@
       />
     </div>
 
-    <div v-if="currentState.status === 'lobby'">
-      <label for="private">Private</label>
-      <input
-        id="private"
-        type="checkbox"
-        v-model="check"
-        @change="changePrivacy"
-      />
+    <div
+      v-if="currentState.status === 'lobby'"
+      class="flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center gap-4 text-center"
+    >
+      <div class="text-3xl font-semibold text-white">In Lobby</div>
+      <label for="private" class="flex items-center gap-2 text-sm text-zinc-300">
+        <input
+          id="private"
+          type="checkbox"
+          v-model="check"
+          @change="changePrivacy"
+        />
+        Private
+      </label>
     </div>
 
     <div v-if="currentState.status === 'game'" class="grid grid-cols-4 gap-8 p-8">

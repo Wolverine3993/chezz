@@ -98,7 +98,8 @@
                       v-slot="{ active }"
                     >
                       <a
-                        :href="item.href"
+                        href="#"
+                        @click="item.onclick"
                         :class="[
                           active ? 'bg-white/5 outline-hidden' : '',
                           'block px-4 py-2 text-sm text-zinc-200',
@@ -166,7 +167,8 @@
               v-for="item in userNavigation"
               :key="item.name"
               as="a"
-              :href="item.href"
+              href="#",
+              @click="item.onclick"
               class="block rounded-md px-3 py-2 text-base font-medium text-zinc-400 hover:bg-white/5 hover:text-white"
               >{{ item.name }}</DisclosureButton
             >
@@ -223,7 +225,6 @@ const navigation = [
   { name: "Home", href: "/" },
   { name: "Friends", href: "/friends" },
   { name: "Play Chess", href: "/chess" },
-  { name: "Calendar", href: "#" },
 ];
 
 const route = useRoute();
@@ -250,8 +251,11 @@ const currentNavIndex = computed(() => {
 });
 
 const userNavigation = [
-  { name: "Your profile", href: "#" },
-  { name: "Settings", href: "#" },
-  { name: "Sign out", href: "#" },
+  { name: "Sign out", onclick: signout },
 ];
+
+async function signout() {
+  await api.Identity_Logout(undefined);
+  router.push("/signin");
+}
 </script>

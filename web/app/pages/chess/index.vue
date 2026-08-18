@@ -10,9 +10,7 @@
 
             <div class="mt-10 space-y-6 sm:mx-auto sm:w-full sm:max-w-sm">
 
-                <p class="block text-sm/6 font-medium text-gray-100 text-center">Lobby lobby lobby, lobby lobby lobby.
-                    Lobby lobby
-                    lboby.</p>
+                <p class="block text-sm/6 font-medium text-gray-100 text-center">Click here to make a lobby.</p>
                 <div>
                     <ChezzButton :loading="createLobbyLoading">Create lobby</ChezzButton>
                 </div>

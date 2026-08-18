@@ -15,7 +15,7 @@ const LobbyInformation = z.object({
 });
 const PackedBoardState = z.object({
   packedBoard: z.string(),
-  imageUrls: z.record(z.string(), z.string()),
+  imageUrls: z.record(z.string()),
 });
 const PieceColor = z.enum(["White", "Black"]);
 const ChessGameResult = z.union([
@@ -30,8 +30,8 @@ const ChessGameState = z.object({
   yourColor: PieceColor,
   gameResult: ChessGameResult,
   moveHistory: z.array(z.string()),
-  whitePlayer: PlayerMetadata.nullable(),
-  blackPlayer: PlayerMetadata.nullable(),
+  whitePlayer: PlayerMetadata,
+  blackPlayer: PlayerMetadata,
 });
 const ChessPosition = z.object({ x: z.number().int(), y: z.number().int() });
 const ChessMove = z.object({
@@ -84,11 +84,9 @@ const AccessTokenResponse = z.object({
   expiresIn: z.number().int(),
   refreshToken: z.string(),
 });
-const RefreshRequest = z.object({ refreshToken: z.string().nullable() });
-const ResendConfirmationEmailRequest = z.object({
-  email: z.string().nullable(),
-});
-const ForgotPasswordRequest = z.object({ username: z.string().nullable() });
+const RefreshRequest = z.object({ refreshToken: z.string() });
+const ResendConfirmationEmailRequest = z.object({ email: z.string() });
+const ForgotPasswordRequest = z.object({ username: z.string() });
 const ResetPasswordRequest = z.object({
   email: z.string(),
   resetCode: z.string(),
@@ -358,7 +356,7 @@ const endpoints = makeApi([
       {
         name: "body",
         type: "Body",
-        schema: z.object({ username: z.string().nullable() }),
+        schema: z.object({ username: z.string() }),
       },
     ],
     response: z.void(),
@@ -432,7 +430,7 @@ const endpoints = makeApi([
       {
         status: 400,
         description: `Bad Request`,
-        schema: z.record(z.string(), z.array(z.string())),
+        schema: z.record(z.array(z.string())),
       },
       {
         status: 404,
@@ -472,7 +470,7 @@ const endpoints = makeApi([
       {
         status: 400,
         description: `Bad Request`,
-        schema: z.record(z.string(), z.array(z.string())),
+        schema: z.record(z.array(z.string())),
       },
     ],
   },
@@ -507,7 +505,7 @@ const endpoints = makeApi([
       {
         status: 400,
         description: `Bad Request`,
-        schema: z.record(z.string(), z.array(z.string())),
+        schema: z.record(z.array(z.string())),
       },
     ],
   },
@@ -617,7 +615,7 @@ const endpoints = makeApi([
       {
         status: 404,
         description: `Not Found`,
-        schema: z.record(z.string(), z.string()),
+        schema: z.record(z.string()),
       },
     ],
   },
