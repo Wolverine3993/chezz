@@ -8,6 +8,11 @@ namespace Chezz.Database.EntityManagers
     {
         async Task AddNotificationAsync(Notification notification)
         {
+            var oldNotifications = await _dbContext.Notifications
+                .Where(oldNotification => oldNotification.UserId == notification.UserId)
+                .ToListAsync();
+
+            _dbContext.RemoveRange(oldNotifications);
             await _dbContext.AddAsync(notification);
             await _dbContext.SaveChangesAsync();
             await _sockets.NotifyAsync(notification.UserId);
