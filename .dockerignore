@@ -1,0 +1,20 @@
+# .NET
+bin/
+obj/
+*.user
+
+# Node / Nuxt
+web/node_modules/
+web/.nuxt/
+web/.output/
+web/dist/
+
+# Git / IDE
+.git/
+.gitignore
+.vs/
+.vscode/
+.idea/
+
+# Docs
+**/*.md

@@ -213,7 +213,7 @@ function checkNotifications() {
 
 if (user.value) {
   const notificationSocket = createWebsocket(
-    "ws://localhost:5281/api/notificationList/ws",
+    wsUrl("/api/notificationList/ws"),
   );
   const removeNotifyListener = notificationSocket.addListener(async () => {
     checkNotifications();

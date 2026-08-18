@@ -53,6 +53,16 @@ export class WebsocketController {
   }
 }
 
+export const wsUrl = (path: string) => {
+  const endpoint = String(useRuntimeConfig().public.wsEndpoint || "/");
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  if (endpoint === "/") {
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    return `${protocol}//${window.location.host}${normalizedPath}`;
+  }
+  return `${endpoint.replace(/\/+$/, "")}${normalizedPath}`;
+};
+
 export const useWebsockets = () =>
   useState<{ [key: string]: WebsocketController }>("websockets", () => ({}));
 

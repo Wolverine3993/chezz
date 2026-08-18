@@ -6,6 +6,12 @@ export default defineNuxtConfig({
   devtools: { enabled: false },
   ssr: false,
   css: ["./app/assets/main.css"],
+  runtimeConfig: {
+    public: {
+      // NUXT_PUBLIC_WS_ENDPOINT
+      wsEndpoint: "/",
+    },
+  },
   nitro: {
     devProxy: {
       "/api": {
