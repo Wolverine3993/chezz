@@ -76,6 +76,7 @@ const RegisterRequest = z.object({
   username: z.string(),
   email: z.string(),
   password: z.string(),
+  registerCode: z.string(),
 });
 const LoginRequest = z.object({ username: z.string(), password: z.string() });
 const AccessTokenResponse = z.object({

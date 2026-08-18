@@ -1737,6 +1737,7 @@
         "required": [
           "email",
           "password",
+          "registerCode",
           "username"
         ],
         "type": "object",
@@ -1748,6 +1749,9 @@
             "type": "string"
           },
           "password": {
+            "type": "string"
+          },
+          "registerCode": {
             "type": "string"
           }
         },

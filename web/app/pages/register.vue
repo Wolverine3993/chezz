@@ -43,6 +43,14 @@
                             </div>
 
                             <div>
+                                <label for="registrationCode" class="block text-sm/6 font-medium text-zinc-100">Registration Code</label>
+                                <div class="mt-2">
+                                    <input v-model="registrationCode" type="registrationCode" name="registrationCode" id="registrationCode" autocomplete="registrationCode"
+                                        class="block w-full rounded-md bg-white/5 px-3 py-1.5 text-base text-white outline-1 -outline-offset-1 outline-white/10 placeholder:text-zinc-500 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-500 sm:text-sm/6" />
+                                </div>
+                            </div>
+
+                            <div>
                                 <ChezzButton type="submit" :loading="loading">Create account</ChezzButton>
                             </div>
                         </form>
@@ -66,6 +74,7 @@ definePageMeta({
 const username = ref();
 const email = ref();
 const password = ref();
+const registrationCode = ref();
 const loading = ref(false);
 
 const user = useUser();
@@ -74,7 +83,7 @@ const router = useRouter();
 async function signin() {
     loading.value = true;
     try {
-        await api.Identity_Register({ username: username.value, email: email.value, password: password.value });
+        await api.Identity_Register({ username: username.value, email: email.value, password: password.value, registerCode: registrationCode.value ?? "" });
         await user.login({ username: username.value, password: password.value });
         router.push("/");
     } catch(e) {
