@@ -25,25 +25,31 @@
                 </h2>
             </div>
 
-                    <div>
-                        <label for="lobby" class="block text-sm/6 font-medium text-gray-100">Lobby ID</label>
-                        <div class="mt-2">
-                            <input type="text" name="lobby" id="lobby" required
-                                placeholder="d5ece5ba-a2a4-43cf-9d16-b04c8893769a"
-                                v-model="lobbyId"
-                                class="block w-full rounded-md bg-white/5 px-3 py-1.5 text-base text-white outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-500 sm:text-sm/6" />
-                        </div>
+            <div class="mt-10 space-y-6 sm:mx-auto sm:w-full sm:max-w-sm">
+                <div>
+                    <label for="lobby" class="block text-sm/6 font-medium text-gray-100">Lobby ID</label>
+                    <div class="mt-2">
+                        <input type="text" name="lobby" id="lobby" required
+                            placeholder="d5ece5ba-a2a4-43cf-9d16-b04c8893769a"
+                            v-model="lobbyId"
+                            class="block w-full rounded-md bg-white/5 px-3 py-1.5 text-base text-white outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-blue-500 sm:text-sm/6" />
                     </div>
-                    <ErrorAlert :messages="joinErrors" />
-                    <div>
-                        <ChezzButton>Join Lobby</ChezzButton>
-                    </div>
-                </form>
+                </div>
+                <ErrorAlert :messages="joinErrors" />
+                <div>
+                    <ChezzButton>Join Lobby</ChezzButton>
+                </div>
+            </div>
+        </form>
     </div>
 </template>
 
 <script setup lang="ts">
 import { ZodError } from 'zod';
+
+definePageMeta({
+    middleware: "auth",
+})
 
 type ChessState = "waiting" | "lobby" | "game";
 

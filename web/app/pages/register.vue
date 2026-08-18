@@ -88,7 +88,7 @@ async function signin() {
     try {
         await api.Identity_Register({ username: username.value, email: email.value, password: password.value, registerCode: registrationCode.value ?? "" });
         await user.login({ username: username.value, password: password.value });
-        router.push("/signin");
+        router.push("/");
     } catch(e) {
         errors.value = extractApiErrors(e);
     }

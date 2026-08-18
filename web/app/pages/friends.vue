@@ -40,6 +40,10 @@
 <script setup lang="ts">
 import InfoNotification from "~/components/Notifications/InfoNotification.vue";
 
+definePageMeta({
+  middleware: "auth",
+});
+
 function reload() {
   api.UserRelationship_GetFriendRequests(undefined).then((requests) => {
     requestList.value = requests;
