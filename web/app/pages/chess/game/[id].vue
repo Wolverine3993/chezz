@@ -336,7 +336,7 @@ const selectedView = computed<{ colIdx: number; rowIdx: number } | null>(() => {
 
 const runtimeConfig = useRuntimeConfig();
 const websocket = createWebsocket(
-  `ws://${runtimeConfig.public.wsEndpoint || 'localhost:5281'}/api/games/chess/lobby/${id}/ws`,
+  `ws://${runtimeConfig.public.wsEndpoint ?? 'localhost:5281/'}/api/games/chess/lobby/${id}/ws`,
 );
 const removeListener = websocket.addListener(async () => {
   if (currentState.value.status === "lobby") {
