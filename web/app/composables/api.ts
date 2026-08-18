@@ -237,6 +237,20 @@ const endpoints = makeApi([
   },
   {
     method: "post",
+    path: "/api/games/chess/lobby/:lobbyId/add-bot",
+    alias: "Chess_AddBot",
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "lobbyId",
+        type: "Path",
+        schema: z.string().uuid(),
+      },
+    ],
+    response: z.string().uuid(),
+  },
+  {
+    method: "post",
     path: "/api/games/chess/lobby/:lobbyId/privacy",
     alias: "Chess_ChangeLobbyPrivacy",
     requestFormat: "json",

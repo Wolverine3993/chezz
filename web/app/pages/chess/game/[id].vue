@@ -16,19 +16,31 @@
       v-if="currentState.status === 'lobby'"
       class="flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center gap-4 text-center"
     >
-      <div class="text-3xl font-semibold text-white">In Lobby</div>
-      <label for="private" class="flex items-center gap-2 text-sm text-zinc-300">
-        <input
-          id="private"
-          type="checkbox"
-          v-model="check"
-          @change="changePrivacy"
-        />
-        Private
-      </label>
+      <div class="flex w-full max-w-sm flex-col items-center gap-4">
+        <div class="text-3xl font-semibold text-white">In Lobby</div>
+        <label
+          for="private"
+          class="flex items-center gap-2 text-sm text-zinc-300"
+        >
+          <input
+            id="private"
+            type="checkbox"
+            v-model="check"
+            @change="changePrivacy"
+          />
+          Private
+        </label>
+        <ChezzButton :loading="addBotLoading" @click="addBot"
+          >Add Bot</ChezzButton
+        >
+        <ErrorAlert :messages="lobbyErrors" />
+      </div>
     </div>
 
-    <div v-if="currentState.status === 'game'" class="grid grid-cols-4 gap-8 p-8">
+    <div
+      v-if="currentState.status === 'game'"
+      class="grid grid-cols-4 gap-8 p-8"
+    >
       <div>
         <div class="flow-root rounded-md bg-zinc-900 p-3">
           <h1 class="text-base font-semibold text-white">Moves</h1>
@@ -67,9 +79,7 @@
                   >
                     {{ row.number }}
                   </td>
-                  <td
-                    class="px-3 py-1.5 text-sm whitespace-nowrap text-white"
-                  >
+                  <td class="px-3 py-1.5 text-sm whitespace-nowrap text-white">
                     {{ row.white }}
                   </td>
                   <td
@@ -118,9 +128,7 @@
                 : col.toReversed()"
               :class="[
                 'relative w-full aspect-square flex items-center justify-center',
-                (colIdx + rowIdx) % 2 === 0
-                  ? 'bg-[#8f9cba]'
-                  : 'bg-[#2c3654]',
+                (colIdx + rowIdx) % 2 === 0 ? 'bg-[#8f9cba]' : 'bg-[#2c3654]',
                 selectedView &&
                 selectedView.colIdx === colIdx &&
                 selectedView.rowIdx === rowIdx
@@ -171,9 +179,7 @@
                   @click.stop="(e) => onDotClick(e, colIdx, rowIdx)"
                   class="absolute inset-0 flex items-center justify-center z-50"
                 >
-                  <div
-                    class="size-[30%] rounded-full bg-black/20"
-                  />
+                  <div class="size-[30%] rounded-full bg-black/20" />
                 </div>
               </template>
             </div>
@@ -334,9 +340,7 @@ const selectedView = computed<{ colIdx: number; rowIdx: number } | null>(() => {
   return { colIdx, rowIdx };
 });
 
-const websocket = createWebsocket(
-  wsUrl(`/api/games/chess/lobby/${id}/ws`),
-);
+const websocket = createWebsocket(wsUrl(`/api/games/chess/lobby/${id}/ws`));
 const removeListener = websocket.addListener(async () => {
   if (currentState.value.status === "lobby") {
     const lobbyStatus = await api.Chess_GetLobbyStatus({
@@ -468,5 +472,19 @@ async function changePrivacy() {
     params: { lobbyId: id },
   });
   check.value = await api.Chess_GetLobbyPrivacy({ params: { lobbyId: id } });
+}
+
+const addBotLoading = ref(false);
+const lobbyErrors = ref<string[]>([]);
+async function addBot() {
+  addBotLoading.value = true;
+  lobbyErrors.value = [];
+  try {
+    await api.Chess_AddBot(undefined, { params: { lobbyId: id } });
+  } catch (e) {
+    lobbyErrors.value = extractApiErrors(e);
+  } finally {
+    addBotLoading.value = false;
+  }
 }
 </script>

@@ -74,7 +74,7 @@ namespace Chezz.Game.Players
 		{
 			var buffer = new byte[1024 * 64];
 
-			while (_webSocket.CloseStatus != null)
+			while (_webSocket.CloseStatus == null)
 			{
 				var result = await _webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken);
 

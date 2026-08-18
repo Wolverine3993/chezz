@@ -1,0 +1,14 @@
+services:
+  chezz:
+    image: ghcr.io/declan-wtg/chezz:latest
+    ports:
+      - "3000:80"
+    environment:
+      - ConnectionStrings__DefaultConnection=Data Source=/data/chezz.db
+      - NUXT_PUBLIC_WS_ENDPOINT=/
+    volumes:
+      - chezz-data:/data
+    restart: unless-stopped
+
+volumes:
+  chezz-data:

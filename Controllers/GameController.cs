@@ -131,7 +131,7 @@ public abstract class GameController<TMove, TPiece, TGameStatus, TGs, TGi> : Con
 
 		using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
 		WebsocketPlayer player = new WebsocketPlayer(webSocket, user);
-		lobby.AddPlayer(user, player);
+		lobby.AddPlayer(player, user);
 
 		if (lobby.CanStartGame())
 		{
@@ -198,5 +198,26 @@ public abstract class GameController<TMove, TPiece, TGameStatus, TGs, TGi> : Con
 		if (player == null) throw new BadRequestException("Not in game, or cannot convert IPlayer");
 
 		return await game.MakeMove(player, move.moveId);
+	}
+
+	[HttpPost("lobby/{lobbyId}/add-bot", Name = "AddBot")]
+	public async Task<Guid> AddBot(Guid lobbyId)
+	{
+		var (lobby, user) = await GetLobbyUser(lobbyId);
+		if (!lobby.Players.Any(player => player.UserId == user.Id))
+			throw new ChezzError(StatusCodes.Status401Unauthorized, "User is not in lobby");
+		if (lobby.GameId != null) throw new BadRequestException("Game already started");
+
+		var bot = new BotPlayer<TMove, TPiece, TGameStatus, TGs, TGi>();
+		if (!lobby.AddPlayer(bot)) throw new BadRequestException("Lobby is full");
+
+		if (lobby.CanStartGame())
+		{
+			var game = new Game<TMove, TPiece, TGameStatus, TGs, TGi>(lobby, new TGs(), new TGi());
+			GameRegistry.Add(game);
+			bot.AttachGame(game);
+		}
+
+		return lobby.Id;
 	}
 }

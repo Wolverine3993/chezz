@@ -36,20 +36,20 @@ public class Lobby
 		}
 	}
 
-	public bool AddPlayer(ChezzUser user, IPlayer player)
+	public bool AddPlayer(IPlayer player, ChezzUser? user = null)
 	{
 		if (_players.Count == maxPlayers) return false;
-		_players.Remove(user.Id);
-		_players.Add(user.Id, player);
-		player.SetupDisconnectHandler(() => RemovePlayer(user));
+		_players.Remove(player.UserId);
+		_players.Add(player.UserId, player);
+		player.SetupDisconnectHandler(() => RemovePlayer(player));
 		Notify();
 		Console.WriteLine("New player connected, now at " + _players.Count);
 		return true;
 	}
 
-	public void RemovePlayer(ChezzUser user)
+	public void RemovePlayer(IPlayer player)
 	{
-		_players.Remove(user.Id);
+		_players.Remove(player.UserId);
 		Notify();
 	}
 
