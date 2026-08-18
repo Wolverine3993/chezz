@@ -1,4 +1,5 @@
 ﻿using Chezz.Database.Models;
+using Chezz.RequestSchemas.Identity;
 using Chezz.SMTP;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -22,15 +23,23 @@ namespace Chezz.Controllers
         TimeProvider timeProvider,
         IOptionsMonitor<BearerTokenOptions> bearerTokenOptions,
         IEmailSender emailSender,
-        LinkGenerator linkGenerator) : ControllerBase
+        LinkGenerator linkGenerator,
+        RegisterCode? registerCode = default) : ControllerBase
     {
         private readonly EmailAddressAttribute _emailAddressAttribute = new();
 
         [HttpPost("register", Name = "Register")]
-        public async Task<Results<Ok, BadRequest<Dictionary<string, string[]>>>> Register(
+        public async Task<Results<Ok, UnauthorizedHttpResult, BadRequest<Dictionary<string, string[]>>>> Register(
             [FromBody] RequestSchemas.Identity.RegisterRequest registration,
             [FromServices] IServiceProvider sp)
         {
+            if (registerCode is not null)
+            {
+                if (registerCode.Value != registration.RegisterCode)
+                {
+                    return TypedResults.Unauthorized();
+                }
+            }
             var userManager = sp.GetRequiredService<UserManager<ChezzUser>>();
 
             if (!userManager.SupportsUserEmail)

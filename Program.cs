@@ -4,6 +4,7 @@ using Chezz.Database.Models;
 using Chezz.Game;
 using Chezz.Game.Games.Chess;
 using Chezz.Notifications;
+using Chezz.RequestSchemas.Identity;
 using Chezz.SMTP;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
@@ -27,6 +28,14 @@ namespace Chezz
 				options.Conventions.Add(new Conventions.RoutePrefixConvention("api"));
 			});
 
+			var registerCode = builder.Configuration.GetRequiredSection("RegisterCode");
+            if (registerCode.Value is not null)
+			{
+				builder.Services.AddSingleton(new RegisterCode
+				{
+					Value = registerCode.Value
+				});
+			}
 
 			builder.Services.AddDbContext<ChezzDbContext>(options => options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 			builder.Services.AddScoped<UserRelationshipManager>();
