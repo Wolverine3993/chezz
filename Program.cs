@@ -37,9 +37,18 @@ namespace Chezz
 				});
 			}
 
-			builder.Services.AddDbContext<ChezzDbContext>(options => options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+			var frontendUrl = builder.Configuration.GetRequiredSection("FrontendUrl");
+			ArgumentNullException.ThrowIfNullOrEmpty(frontendUrl.Value);
+
+			builder.Services.AddSingleton(new FrontendUrl
+			{
+				Url = frontendUrl.Value
+			});
+
+            builder.Services.AddDbContext<ChezzDbContext>(options => options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 			builder.Services.AddScoped<UserRelationshipManager>();
 			builder.Services.AddScoped<NotificationManager>();
+			builder.Services.AddScoped<FriendRequestManager>();
 			builder.Services.AddSingleton<NotificationSocketRegistry>();
 
 			builder.Services.AddSmtpConfiguration(builder.Configuration.GetRequiredSection("SmtpConfiguration"));

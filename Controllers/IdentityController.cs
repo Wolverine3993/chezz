@@ -24,6 +24,7 @@ namespace Chezz.Controllers
         IOptionsMonitor<BearerTokenOptions> bearerTokenOptions,
         IEmailSender emailSender,
         LinkGenerator linkGenerator,
+        FrontendUrl frontendUrl,
         RegisterCode? registerCode = default) : ControllerBase
     {
         private readonly EmailAddressAttribute _emailAddressAttribute = new();
@@ -223,7 +224,7 @@ namespace Chezz.Controllers
                 var code = await userManager.GeneratePasswordResetTokenAsync(user);
                 code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
 
-                await emailSender.SendEmailAsync(user.Email!, "Reset your password", EmailFormatter.GetResetPasswordHTML($"http://localhost:3000/reset-password/{HtmlEncoder.Default.Encode(code)}"));
+                await emailSender.SendEmailAsync(user.Email!, "Reset your password", EmailFormatter.GetResetPasswordHTML($"{frontendUrl.Url}/reset-password/{HtmlEncoder.Default.Encode(code)}"));
             }
 
             // Don't reveal that the user does not exist or is not confirmed, so don't return a 200 if we would have

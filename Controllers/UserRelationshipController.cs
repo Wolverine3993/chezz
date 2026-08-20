@@ -13,6 +13,7 @@ namespace Chezz.Controllers
     public class UserRelationshipController(
         NotificationManager _notificationManager,
         UserRelationshipManager _userRelationshipManager,
+        FriendRequestManager _friendRequestManager,
         UserManager<ChezzUser> _userManager) : ControllerBase
     {
         [HttpGet("get-friends")]
@@ -43,7 +44,7 @@ namespace Chezz.Controllers
                 return TypedResults.Unauthorized();
             }
 
-            return TypedResults.Ok(await _userRelationshipManager.GetFriendRequestsAsync(user));
+            return TypedResults.Ok(await _friendRequestManager.GetFriendRequestsAsync(user));
         }
 
         [HttpPost("add-friend")]
@@ -71,16 +72,16 @@ namespace Chezz.Controllers
                 return TypedResults.Conflict("You are already friends.");
             }
 
-            if (await _userRelationshipManager.FriendRequestExistsAsync(user2, user1))
+            if (await _friendRequestManager.FriendRequestExistsAsync(user2, user1))
             {
                 await _userRelationshipManager.MakeFriendsAsync(user1, user2);
-                await _userRelationshipManager.RemoveFriendRequestAsync(user2, user1);
+                await _friendRequestManager.RemoveFriendRequestAsync(user2, user1);
                 await _notificationManager.RemoveFriendRequestNotificationAsync(user2, user1);
 
                 return TypedResults.Ok();
             }
 
-            var friendRequest = await _userRelationshipManager.AddFriendRequestAsync(user1, user2);
+            var friendRequest = await _friendRequestManager.AddFriendRequestAsync(user1, user2);
             if (friendRequest is not null)
             {
                 await _notificationManager.AddFriendNotificationAsync(user1, user2, friendRequest);
@@ -98,7 +99,7 @@ namespace Chezz.Controllers
                 return TypedResults.Unauthorized();
             }
 
-            var friendRequest = await _userRelationshipManager.GetFriendRequestByIdAsync(request.RequestId);
+            var friendRequest = await _friendRequestManager.GetFriendRequestByIdAsync(request.RequestId);
 
             if (friendRequest is null)
             {
@@ -111,7 +112,7 @@ namespace Chezz.Controllers
             }
 
             await _userRelationshipManager.MakeFriendsAsync(friendRequest.UserFrom, friendRequest.UserTo);
-            await _userRelationshipManager.RemoveFriendRequestAsync(friendRequest.Id);
+            await _friendRequestManager.RemoveFriendRequestAsync(friendRequest.Id);
 
             return TypedResults.Ok();
         }
@@ -125,7 +126,7 @@ namespace Chezz.Controllers
                 return TypedResults.Unauthorized();
             }
 
-            await _userRelationshipManager.RemoveFriendRequestAsync(request.RequestId);
+            await _friendRequestManager.RemoveFriendRequestAsync(request.RequestId);
 
             return TypedResults.Ok();
         }
